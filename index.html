@@ -1,40 +1,128 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <title>OfficeOnFire</title>
+  <meta charset="utf-8"/>
+  <title>OfficeOnFire — Presence Demo</title>
+  <style>
+    body { margin: 0; background:#111; color:#eee; font-family: system-ui, sans-serif; }
+    #hud { padding: 10px; }
+    canvas { display:block; margin: 0 auto; background:#222; border:1px solid #333; }
+  </style>
 </head>
 <body>
-    <h1>OfficeOnFire Demo</h1>
-    <p>Use arrow keys to move the player.</p>
-    <pre id="status"></pre>
+  <div id="hud">Use arrow keys. You = red. Others = blue.</div>
+  <canvas id="game" width="600" height="400"></canvas>
 
-    <script src="build/OfficeOnFire.js"></script>
-    <script>
-    GameModule().then((Module) => {
-        console.log("WASM loaded!");
+  <script type="module">
+    import initModule from "./build/OfficeOnFire.js";
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-        const player = new Module.Player();
-        const status = document.getElementById("status");
+    // --- Supabase config ---
+    const SUPABASE_URL = "<supabaseUrl>";
+    const SUPABASE_KEY = "<supabaseKey>";
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        function updateStatus() {
-            status.textContent = "Player position: " + player.position();
-        }
+    // --- Identity (stable across reloads) ---
+    let playerKey = localStorage.getItem("oof_player_key");
+    if (!playerKey) {
+      playerKey = crypto.randomUUID();
+      localStorage.setItem("oof_player_key", playerKey);
+    }
 
-        
-        updateStatus(); // initial display
-
-        // event listener
-        window.addEventListener("keydown", (e) => {
-            switch(e.key) {
-                case "ArrowUp":    player.move(0, -1); break;
-                case "ArrowDown":  player.move(0, 1); break;
-                case "ArrowLeft":  player.move(-1, 0); break;
-                case "ArrowRight": player.move(1, 0); break;
-            }
-            updateStatus();
-        });
+    // --- WASM init ---
+    const Module = await initModule({
+      locateFile: (p) => "./build/" + p,
     });
-    </script>
+    console.log("WASM ready");
+
+    // --- Presence channel ---
+    const ROOM = "global";
+    const channel = supabase.channel(`room-${ROOM}`, {
+      config: { presence: { key: playerKey } },
+    });
+
+    // Flatten presence state: { key: [meta,...] } -> { key: meta }
+    const flattenPresence = (state) => {
+      const flat = {};
+      for (const [k, metas] of Object.entries(state)) {
+        // we always track a single meta object per client
+        flat[k] = metas[0] || {};
+      }
+      return flat;
+    };
+
+    // Track of all players (including you)
+    let players = {}; // { key: {x,y,floor} }
+
+    // --- Canvas render ---
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const tile = 12, ox = 60, oy = 60;
+
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // draw grid (optional)
+      ctx.globalAlpha = 0.2;
+      for (let i = 0; i < 30; i++) {
+        ctx.fillRect(ox + i*tile, oy, 1, 300);
+        ctx.fillRect(ox, oy + i*tile, 300, 1);
+      }
+      ctx.globalAlpha = 1;
+
+      // draw players
+      for (const [key, p] of Object.entries(players)) {
+        ctx.fillStyle = key === playerKey ? "red" : "blue";
+        ctx.fillRect(ox + (p.x||0)*tile, oy + (p.y||0)*tile, tile, tile);
+      }
+    }
+
+    // --- Presence event handlers ---
+    channel
+      .on("presence", { event: "sync" }, () => {
+        players = flattenPresence(channel.presenceState());
+        render();
+      })
+      // (Optional) keep logs muted; movement updates often show as join/leave diffs internally.
+      // .on("presence", { event: "join" }, ({ key }) => console.log("join", key))
+      // .on("presence", { event: "leave" }, ({ key }) => console.log("leave", key))
+      .subscribe(async (status) => {
+        if (status !== "SUBSCRIBED") return;
+        // Initial presence payload (your current position from C++)
+        channel.track({
+          x: Module.getX(),
+          y: Module.getY(),
+          floor: Module.getFloor(),
+        });
+      });
+
+    // --- Movement -> update local + track() presence ---
+    window.addEventListener("keydown", (e) => {
+      let dx = 0, dy = 0;
+      if (e.key === "ArrowUp")    dy = -1;
+      if (e.key === "ArrowDown")  dy = 1;
+      if (e.key === "ArrowLeft")  dx = -1;
+      if (e.key === "ArrowRight") dx = 1;
+      if (!dx && !dy) return;
+
+      // Update local C++ state
+      Module.movePlayer(dx, dy);
+
+      // Update my local cached presence immediately for snappy rendering
+      players[playerKey] = {
+        x: Module.getX(),
+        y: Module.getY(),
+        floor: Module.getFloor(),
+      };
+      render();
+
+      // Send new state to others (this does NOT re-subscribe; it's the correct way to update presence)
+      channel.track(players[playerKey]);
+    });
+
+    // Render once (in case presence sync hasn't arrived yet)
+    players[playerKey] = { x: Module.getX(), y: Module.getY(), floor: Module.getFloor() };
+    render();
+  </script>
 </body>
 </html>

@@ -1,26 +1,34 @@
 #include <emscripten/bind.h>
-#include <string>
 using namespace emscripten;
 
-class Player {
-public:
-    int x = 0;
-    int y = 0;
-
+struct Player {
+    int x, y, floor;
+    Player() : x(0), y(0), floor(0) {}
+    
     void move(int dx, int dy) {
         x += dx;
         y += dy;
     }
 
-    std::string position() const {
-        return "(" + std::to_string(x) + ", " + std::to_string(y) + ")";
+    void downFloor() {
+        floor++;
+        x = 0; y = 0; // reset position when changing floors
     }
 };
 
-// expose the Player class to JS
-EMSCRIPTEN_BINDINGS(officeonfire_module) {
-    class_<Player>("Player")
-        .constructor<>()
-        .function("move", &Player::move)
-        .function("position", &Player::position);
+Player player;
+
+void movePlayer(int dx, int dy) {
+    player.move(dx, dy);
+}
+
+int getX() { return player.x; }
+int getY() { return player.y; }
+int getFloor() { return player.floor; }
+
+EMSCRIPTEN_BINDINGS(game_module) {
+    function("movePlayer", &movePlayer);
+    function("getX", &getX);
+    function("getY", &getY);
+    function("getFloor", &getFloor);
 }

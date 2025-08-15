@@ -9,5 +9,5 @@ add_executable(OfficeOnFire game.cpp)
 
 # linker flags for emscripten
 set_target_properties(OfficeOnFire PROPERTIES
-    LINK_FLAGS "-s MODULARIZE=1 -s EXPORT_NAME='GameModule' --bind -s WASM=1"
+    LINK_FLAGS "-s MODULARIZE=1 -s EXPORT_ES6=1 -s EXPORT_NAME='Module' --bind -s WASM=1"
 )
