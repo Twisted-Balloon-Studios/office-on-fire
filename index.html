@@ -17,10 +17,14 @@
     import initModule from "./build/OfficeOnFire.js";
     import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+    async function getSupabaseConfig() {
+        const res = await fetch('/functions/getSupabaseSecrets');
+        const data = await res.json();
+        return data; // { url, anonKey }
+    }
+
     // --- Supabase config ---
-    const config = await fetch('/api/config').then(r => r.json());
-    const SUPABASE_URL = config.supabaseUrl;
-    const SUPABASE_KEY = config.supabaseKey;
+    const { SUPABASE_URL, SUPABASE_KEY } = await getSupabaseConfig();
     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
     // --- Identity (stable across reloads) ---
