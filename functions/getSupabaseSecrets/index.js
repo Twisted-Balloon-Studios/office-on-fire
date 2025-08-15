@@ -3,11 +3,11 @@ export async function onRequest({ request, params, env }) {
 
   try {
     // EdgeOne environment variables
-    const url = process.env.SUPABASE_URL;
-    const anonKey = process.env.SUPABASE_ANON_KEY;
+    const url = env.SUPABASE_URL;
+    const anonKey = env.SUPABASE_ANON_KEY;
 
     if (!url || !anonKey) {
-      return new Response(JSON.stringify({ error: 'Supabase keys not set' }), {
+      return new Response(JSON.stringify({ error: 'Supabase keys not set', url: env.SUPABASE_URL, anonKey: env.SUPABASE_ANON_KEY}), {
         status: 500,
         headers: {
             'content-type': 'application/json; charset=UTF-8',
