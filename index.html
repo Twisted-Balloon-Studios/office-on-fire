@@ -18,8 +18,9 @@
     import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
     // --- Supabase config ---
-    const SUPABASE_URL = "<supabaseUrl>";
-    const SUPABASE_KEY = "<supabaseKey>";
+    const config = await fetch('/api/config').then(r => r.json());
+    const SUPABASE_URL = config.supabaseUrl;
+    const SUPABASE_KEY = config.supabaseKey;
     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
     // --- Identity (stable across reloads) ---
