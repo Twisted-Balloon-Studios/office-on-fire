@@ -1,40 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <title>OfficeOnFire</title>
+  <meta charset="utf-8">
+  <title>OfficeOnFire</title>
 </head>
 <body>
-    <h1>OfficeOnFire Demo</h1>
-    <p>Use arrow keys to move the player.</p>
-    <pre id="status"></pre>
+  <script type="module">
+    import ModuleFactory from './build/OfficeOnFire.js';
 
-    <script src="build/OfficeOnFire.js"></script>
-    <script>
-    GameModule().then((Module) => {
-        console.log("WASM loaded!");
-
-        const player = new Module.Player();
-        const status = document.getElementById("status");
-
-        function updateStatus() {
-            status.textContent = "Player position: " + player.position();
-        }
-
-        
-        updateStatus(); // initial display
-
-        // event listener
-        window.addEventListener("keydown", (e) => {
-            switch(e.key) {
-                case "ArrowUp":    player.move(0, -1); break;
-                case "ArrowDown":  player.move(0, 1); break;
-                case "ArrowLeft":  player.move(-1, 0); break;
-                case "ArrowRight": player.move(1, 0); break;
-            }
-            updateStatus();
-        });
+    const Module = ModuleFactory({
+      locateFile: path => './build/' + path,
+      onRuntimeInitialized: () => {
+        console.log('Module ready!');
+      }
     });
-    </script>
+  </script>
 </body>
 </html>
