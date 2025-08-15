@@ -1,40 +1,70 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <title>OfficeOnFire</title>
+  <meta charset="utf-8">
+  <title>OfficeOnFire</title>
 </head>
 <body>
-    <h1>OfficeOnFire Demo</h1>
-    <p>Use arrow keys to move the player.</p>
-    <pre id="status"></pre>
+  <h1>OfficeOnFire</h1>
+  <pre id="status">Loading...</pre>
 
-    <script src="build/OfficeOnFire.js"></script>
-    <script>
-    GameModule().then((Module) => {
-        console.log("WASM loaded!");
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    import ModuleFactory from './build/OfficeOnFire.js';
 
-        const player = new Module.Player();
-        const status = document.getElementById("status");
+    // Initialize Supabase
+    const supabaseUrl = '<supabaseUrl>';
+    const supabaseKey = '<supabaseKey>';
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-        function updateStatus() {
-            status.textContent = "Player position: " + player.position();
-        }
-
-        
-        updateStatus(); // initial display
-
-        // event listener
-        window.addEventListener("keydown", (e) => {
-            switch(e.key) {
-                case "ArrowUp":    player.move(0, -1); break;
-                case "ArrowDown":  player.move(0, 1); break;
-                case "ArrowLeft":  player.move(-1, 0); break;
-                case "ArrowRight": player.move(1, 0); break;
-            }
-            updateStatus();
-        });
+    // Initialize WASM module
+    const Module = await ModuleFactory({
+      locateFile: path => './build/' + path,
     });
-    </script>
+
+    const game = new Module.Game();
+    const playerId = Math.floor(Math.random()*100000).toString();
+
+    // Sync with Supabase
+    async function updatePosition() {
+      console.log({
+        id: playerId,
+        x: game.getPlayer().x,
+        y: game.getPlayer().y,
+        floor: game.getPlayer().floor
+      });
+      await supabase.from('players').upsert({
+        id: playerId,
+        x: game.getPlayer().x,
+        y: game.getPlayer().y,
+        floor: game.getPlayer().floor
+      });
+    }
+
+    // ✅ Correct realtime subscription for supabase-js v2
+    const channel = supabase
+      .channel('realtime:players')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'players' },
+        payload => {
+          console.log('Change received!', payload);
+        }
+      )
+      .subscribe();
+
+    // Handle movement
+    document.addEventListener('keydown', async e => {
+      if (["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)) {
+        game.movePlayer(e.key);
+        document.getElementById('status').textContent =
+          `You are at (${game.getPlayer().x}, ${game.getPlayer().y}) floor ${game.getPlayer().floor}`;
+        await updatePosition();
+      }
+    });
+
+    document.getElementById('status').textContent =
+      `You are at (${game.getPlayer().x}, ${game.getPlayer().y}) floor ${game.getPlayer().floor}`;
+  </script>
 </body>
 </html>

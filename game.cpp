@@ -1,26 +1,74 @@
 #include <emscripten/bind.h>
-#include <string>
+#include <vector>
+#include <cstdlib>
+
 using namespace emscripten;
 
-class Player {
-public:
-    int x = 0;
-    int y = 0;
+struct Player {
+    int x;
+    int y;
+    int floor;
+};
 
-    void move(int dx, int dy) {
-        x += dx;
-        y += dy;
+class Game {
+public:
+    std::vector<std::vector<int>> floorMaze;
+    Player player;
+
+    Game() {
+        player = {0, 0, 0};
+        generateFloor(player.floor);
     }
 
-    std::string position() const {
-        return "(" + std::to_string(x) + ", " + std::to_string(y) + ")";
+    void generateFloor(int floorNum) {
+        floorMaze.clear();
+        floorMaze.resize(10, std::vector<int>(10, 0));
+        // Random walls
+        for (int i = 0; i < 10; i++)
+            for (int j = 0; j < 10; j++)
+                floorMaze[i][j] = (rand() % 4 == 0) ? 1 : 0; // 25% walls
+        // Ensure player start and exit exist
+        floorMaze[0][0] = 0;
+        floorMaze[9][9] = 0;
+    }
+
+    void movePlayer(std::string dir) {
+        int nx = player.x;
+        int ny = player.y;
+        if (dir == "ArrowUp") ny--;
+        if (dir == "ArrowDown") ny++;
+        if (dir == "ArrowLeft") nx--;
+        if (dir == "ArrowRight") nx++;
+
+        if (nx >= 0 && nx < 10 && ny >= 0 && ny < 10 && floorMaze[ny][nx] == 0) {
+            player.x = nx;
+            player.y = ny;
+        }
+
+        // Check exit
+        if (player.x == 9 && player.y == 9) {
+            player.floor++;
+            player.x = 0;
+            player.y = 0;
+            generateFloor(player.floor);
+        }
+    }
+
+    Player getPlayer() {
+        return player;
     }
 };
 
-// expose the Player class to JS
-EMSCRIPTEN_BINDINGS(officeonfire_module) {
+// Bindings
+EMSCRIPTEN_BINDINGS(office_on_fire) {
     class_<Player>("Player")
         .constructor<>()
-        .function("move", &Player::move)
-        .function("position", &Player::position);
+        .property("x", &Player::x)
+        .property("y", &Player::y)
+        .property("floor", &Player::floor);
+
+    class_<Game>("Game")
+        .constructor<>()
+        .function("movePlayer", &Game::movePlayer)
+        .function("getPlayer", &Game::getPlayer);
 }
