@@ -1,20 +1,44 @@
 // EdgeOne serverless function
-export default async function handler(req, res) {
-  // EdgeOne environment variables
-  const url = process.env.SUPABASE_URL;
-  const anonKey = process.env.SUPABASE_ANON_KEY;
+export async function onRequest({ request, params, env }) {
 
-  if (!url || !anonKey) {
-    return new Response(JSON.stringify({ error: 'Supabase keys not set' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
+  try {
+    // EdgeOne environment variables
+    const url = process.env.SUPABASE_URL;
+    const anonKey = process.env.SUPABASE_ANON_KEY;
+
+    if (!url || !anonKey) {
+      return new Response(JSON.stringify({ error: 'Supabase keys not set' }), {
+        status: 500,
+        headers: {
+            'content-type': 'application/json; charset=UTF-8',
+            'Access-Control-Allow-Origin': '*',
+        }, 
+      });
+    }
+
+    const res = JSON.stringify({ url, anonKey });
+
+    return new Response(res, { 
+      headers: {
+          'content-type': 'application/json; charset=UTF-8',
+          'Access-Control-Allow-Origin': '*',
+      }, 
     });
+  } catch (err) {
+    console.log(err);
+    return new Response(
+      JSON.stringify({
+        error: "Failed to get Supabase url and key.",
+      }),
+      {
+        headers: {
+          'content-type': 'application/json; charset=UTF-8',
+          'Access-Control-Allow-Origin': '*',
+        },
+      }
+    );
   }
 
-  return new Response(
-    JSON.stringify({ url, anonKey }),
-    { headers: { 'Content-Type': 'application/json' } }
-  );
 }
 
 // export default function handler(req, res) {
