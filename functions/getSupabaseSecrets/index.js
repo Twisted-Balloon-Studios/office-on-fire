@@ -29,6 +29,9 @@ export async function onRequest({ request, params, env }) {
     return new Response(
       JSON.stringify({
         error: "Failed to get Supabase url and key.",
+        message: err.message,
+        stack: err.stack,
+        name: err.name
       }),
       {
         headers: {
