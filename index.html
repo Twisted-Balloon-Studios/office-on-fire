@@ -24,8 +24,8 @@
     }
 
     // --- Supabase config ---
-    const { SUPABASE_URL, SUPABASE_KEY } = await getSupabaseConfig();
-    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    const { url, anonKey } = await getSupabaseConfig();
+    const supabase = createClient(url, anonKey);
 
     // --- Identity (stable across reloads) ---
     let playerKey = localStorage.getItem("oof_player_key");
