@@ -11,7 +11,7 @@
 </head>
 <body>
   <div id="hud">Use arrow keys. You = red. Others = blue.</div>
-  <canvas id="game" width="600" height="400"></canvas>
+  <canvas id="game" width="600" height="600"></canvas>
 
   <script type="module">
     import initModule from "./build/OfficeOnFire.js";
@@ -24,8 +24,12 @@
     }
 
     // --- Supabase config ---
-    const { SUPABASE_URL, SUPABASE_KEY } = await getSupabaseConfig();
-    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    const { url, anonKey } = await getSupabaseConfig();
+    // local development
+    // const url = "<SUPABASE_URL>";
+    // const anonKey = "<SUPABASE_ANONKEY>";
+
+    const supabase = createClient(url, anonKey);
 
     // --- Identity (stable across reloads) ---
     let playerKey = localStorage.getItem("oof_player_key");
@@ -67,18 +71,41 @@
     function render() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // draw grid (optional)
-      ctx.globalAlpha = 0.2;
-      for (let i = 0; i < 30; i++) {
-        ctx.fillRect(ox + i*tile, oy, 1, 300);
-        ctx.fillRect(ox, oy + i*tile, 300, 1);
+      let offsetX = canvas.width / 2 - Module.getX() * tile;
+      let offsetY = canvas.height / 2 - Module.getY() * tile;
+      let mazeHeight = Module.getHeight();
+      let mazeWidth = Module.getWidth();
+
+      // draw maze
+      for (let x = 0; x < mazeHeight; x++) {
+        for (let y = 0; y < mazeWidth; y++) {
+          if (Module.getCell(x, y) === 1) {
+            ctx.fillStyle = "black";
+            ctx.fillRect(offsetX + x*tile, offsetY + y*tile, tile, tile);
+          }
+          if (Module.getCell(x, y) === 2) {
+            ctx.fillStyle = "green";
+            ctx.fillRect(offsetX + x*tile, offsetY + y*tile, tile, tile);
+          }
+        }
       }
-      ctx.globalAlpha = 1;
+
+      // draw grid (optional)
+      // ctx.globalAlpha = 0.2;
+      // for (let i = 0; i < 30; i++) {
+      //   ctx.fillRect(ox + i*tile, oy, 1, 300);
+      //   ctx.fillRect(ox, oy + i*tile, 300, 1);
+      // }
+      // ctx.globalAlpha = 1;
 
       // draw players
       for (const [key, p] of Object.entries(players)) {
         ctx.fillStyle = key === playerKey ? "red" : "blue";
-        ctx.fillRect(ox + (p.x||0)*tile, oy + (p.y||0)*tile, tile, tile);
+        if (key !== playerKey && players[key].floor !== Module.getFloor()){
+          // don't draw, not on the same floor
+        } else {
+          ctx.fillRect(offsetX + (p.x||0)*tile, offsetY + (p.y||0)*tile, tile, tile);
+        }
       }
     }
 
@@ -110,8 +137,12 @@
       if (e.key === "ArrowRight") dx = 1;
       if (!dx && !dy) return;
 
-      // Update local C++ state
+      let oldFloor = Module.getFloor();
       Module.movePlayer(dx, dy);
+      let newFloor = Module.getFloor();
+      if (newFloor !== oldFloor){
+        Module.generateMaze(40, 40, newFloor);
+      }
 
       // Update my local cached presence immediately for snappy rendering
       players[playerKey] = {
