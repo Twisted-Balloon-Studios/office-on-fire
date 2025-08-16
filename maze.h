@@ -1,0 +1,47 @@
+#pragma once
+#include <vector>
+#include <set>
+#include <tuple>
+
+enum class MessageType {
+    ITEM_PICKED_UP,
+    GHOST_ELIMINATED
+};
+
+struct Message {
+    MessageType mt;
+    int x, y, floor;
+    int ghost_id;
+};
+
+class Maze {
+public:
+    Maze(int h, int w, int f, int sd);
+
+    void generate(int h, int w, int f);
+
+    bool tryPickup(int px, int py, int f);
+
+    int getWidth() const;
+    int getHeight() const;
+    int getSeed() const;
+    int getCell(int x, int y) const;
+
+    void apply(const Message& m);
+    void apply(Message&& m);
+
+    void insert(Message&& msg);
+
+    void cleanUp();
+
+    struct Compare {
+        bool operator()(const Message& a, const Message& b) const {
+            return a.floor < b.floor;
+        }
+    };
+
+private:
+    int height, width, seed, flr;
+    std::vector<std::vector<int>> grid;
+    std::set<Message, Compare> messageList;
+};

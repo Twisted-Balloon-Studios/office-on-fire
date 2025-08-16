@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 # include_directories(./include)
 
-add_executable(OfficeOnFire game.cpp)
+add_executable(OfficeOnFire game.cpp maze.cpp ghost.cpp)
 
 # linker flags for emscripten
 set_target_properties(OfficeOnFire PROPERTIES

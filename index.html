@@ -149,12 +149,7 @@
         if (e.key === "ArrowRight") dx = 1;
         if (!dx && !dy) return;
 
-        let oldFloor = Module.getFloor();
         Module.movePlayer(dx, dy);
-        let newFloor = Module.getFloor();
-        if (newFloor !== oldFloor){
-          Module.generateMaze(40, 40, newFloor);
-        }
       } else if (e.key === "c"){ // pick up item
         
         const x = Module.getX();
@@ -172,7 +167,6 @@
               messageType: 0, x, y, floor, ghost_id: 0 
             }
           });
-          render();
         }
       }
 
