@@ -3,7 +3,19 @@
 #include <vector>
 #include <cstdlib>
 #include <ctime>
+#include <set>
 using namespace emscripten;
+
+enum MessageType {
+    ITEM_PICKED_UP,
+    GHOST_ELIMINATED
+};
+
+struct Message {
+    MessageType mt;
+    int x, y, floor;
+    int ghost_id;
+};
 
 class Maze {
 
@@ -37,11 +49,35 @@ public:
             grid[y][x] = 1;
         }
 
+        // add item (a fire extinguisher) at random place
+        int extinguisher_x = rand() % (width-2) + 1;
+        int extinguisher_y = rand() % (height-2) + 1;
+        grid[extinguisher_y][extinguisher_x] = 3;
+        int erasure_counter = 0;
+
+        for (auto it = messageList.begin(); it != messageList.end(); it++){
+            if (it -> floor > flr) break;
+            apply(*it);
+            erasure_counter += 1;
+        }
+        while (erasure_counter > 0){ // remove applied messages
+            erasure_counter--;
+            messageList.erase(messageList.begin());
+        }
+
         // designate a 2x2 exit at bottom-right corner
         grid[height-3][width-3] = 2;
         grid[height-3][width-2] = 2;
         grid[height-2][width-3] = 2;
         grid[height-2][width-2] = 2;
+    }
+
+    bool tryPickup(int px, int py, int f){
+        if (flr != f) return false; // not on the correct floor
+        if (px < 0 || px >= height || py < 0 || py >= width) return false; // index out of bound
+        if (grid[px][py] != 3) return false; // not item
+        grid[px][py] = 0; // picked up item, empty cell now
+        return true; // must send message at JS end
     }
 
     int getSeed() const { return seed; }
@@ -52,9 +88,65 @@ public:
         return grid[x][y];
     }
 
+    void apply(const Message& m){
+        if (m.floor != flr) return;
+        switch (m.mt){
+            case ITEM_PICKED_UP:
+                grid[m.x][m.y] = 0; // empty cell
+                break;
+            case GHOST_ELIMINATED:
+                // TODO
+                break;
+            default:
+                // TODO
+                break;
+        }
+    }
+
+    void apply(Message&& m){
+        if (m.floor != flr) return;
+        switch (m.mt){
+            case ITEM_PICKED_UP:
+                grid[m.x][m.y] = 0; // empty cell
+                break;
+            case GHOST_ELIMINATED:
+                // TODO
+                break;
+            default:
+                // TODO
+                break;
+        }
+    }
+
+    void insert(Message&& m){
+        if (flr > m.floor) return; // not relevant
+        if (flr == m.floor){ // immediately apply
+            apply(std::move(m));
+            return;
+        }
+        messageList.insert(std::move(m));
+    }
+
+    void cleanUp(){
+        // cleans up the message list to only contain relevant information
+        while (!messageList.empty()){
+            if ((messageList.begin() -> floor) < flr){
+                // not relevant information
+                messageList.erase(messageList.begin());
+            } else break;
+        }
+    }
+
+    struct Compare {
+        bool operator()(const Message& a, const Message& b) const {
+            return a.floor < b.floor;
+        }
+    };
+
 private:
     int height, width, seed, flr;
     std::vector<std::vector<int>> grid;
+    std::set<Message, Compare> messageList;
 };
 
 struct Player {
@@ -97,6 +189,12 @@ int getCell(int x, int y) { return maze.getCell(x, y); }
 int getHeight() { return maze.getHeight(); }
 int getWidth() { return maze.getWidth(); }
 void generateMaze(int height, int width, int flr) { maze.generate(height, width, flr); }
+void addMessage(int messageType, int x, int y, int floor, int ghost_id){
+    MessageType mt = static_cast<MessageType>(messageType);
+    maze.insert({mt, x, y, floor, ghost_id});
+}
+void cleanUp(){ maze.cleanUp(); }
+bool tryPickup(int px, int py, int f){ return maze.tryPickup(px, py, f); }
 
 EMSCRIPTEN_BINDINGS(game_module) {
     function("movePlayer", &movePlayer);
@@ -107,4 +205,8 @@ EMSCRIPTEN_BINDINGS(game_module) {
     function("getHeight", &getHeight);
     function("getWidth", &getWidth);
     function("generateMaze", &generateMaze);
+
+    function("addMessage", &addMessage);
+    function("cleanUp", &cleanUp);
+    function("tryPickup", &tryPickup);
 }

@@ -79,12 +79,16 @@
       // draw maze
       for (let x = 0; x < mazeHeight; x++) {
         for (let y = 0; y < mazeWidth; y++) {
-          if (Module.getCell(x, y) === 1) {
+          if (Module.getCell(x, y) === 1) { // wall
             ctx.fillStyle = "black";
             ctx.fillRect(offsetX + x*tile, offsetY + y*tile, tile, tile);
           }
-          if (Module.getCell(x, y) === 2) {
+          if (Module.getCell(x, y) === 2) { // exit
             ctx.fillStyle = "green";
+            ctx.fillRect(offsetX + x*tile, offsetY + y*tile, tile, tile);
+          }
+          if (Module.getCell(x, y) === 3) { // item
+            ctx.fillStyle = "purple";
             ctx.fillRect(offsetX + x*tile, offsetY + y*tile, tile, tile);
           }
         }
@@ -115,6 +119,12 @@
         players = flattenPresence(channel.presenceState());
         render();
       })
+      .on("broadcast", { event: "item_picked" }, ({ payload }) => {
+        const { messageType, x, y, floor, ghost_id } = payload;
+        console.log("received broadcast", payload);
+        Module.addMessage(messageType, x, y, floor, ghost_id);
+        render();
+      })
       // (Optional) keep logs muted; movement updates often show as join/leave diffs internally.
       // .on("presence", { event: "join" }, ({ key }) => console.log("join", key))
       // .on("presence", { event: "leave" }, ({ key }) => console.log("leave", key))
@@ -130,18 +140,40 @@
 
     // --- Movement -> update local + track() presence ---
     window.addEventListener("keydown", (e) => {
-      let dx = 0, dy = 0;
-      if (e.key === "ArrowUp")    dy = -1;
-      if (e.key === "ArrowDown")  dy = 1;
-      if (e.key === "ArrowLeft")  dx = -1;
-      if (e.key === "ArrowRight") dx = 1;
-      if (!dx && !dy) return;
 
-      let oldFloor = Module.getFloor();
-      Module.movePlayer(dx, dy);
-      let newFloor = Module.getFloor();
-      if (newFloor !== oldFloor){
-        Module.generateMaze(40, 40, newFloor);
+      if (e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === "ArrowLeft" || e.key === "ArrowRight"){ // movement
+        let dx = 0, dy = 0;
+        if (e.key === "ArrowUp")    dy = -1;
+        if (e.key === "ArrowDown")  dy = 1;
+        if (e.key === "ArrowLeft")  dx = -1;
+        if (e.key === "ArrowRight") dx = 1;
+        if (!dx && !dy) return;
+
+        let oldFloor = Module.getFloor();
+        Module.movePlayer(dx, dy);
+        let newFloor = Module.getFloor();
+        if (newFloor !== oldFloor){
+          Module.generateMaze(40, 40, newFloor);
+        }
+      } else if (e.key === "c"){ // pick up item
+        
+        const x = Module.getX();
+        const y = Module.getY();
+        const floor = Module.getFloor();
+
+        console.log("tried to pick up", x, y, floor);
+
+        if (Module.tryPickup(x, y, floor)) {
+          // picked locally → broadcast to others
+          channel.send({
+            type: "broadcast",
+            event: "item_picked",
+            payload: { 
+              messageType: 0, x, y, floor, ghost_id: 0 
+            }
+          });
+          render();
+        }
       }
 
       // Update my local cached presence immediately for snappy rendering
