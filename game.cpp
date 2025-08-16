@@ -9,10 +9,6 @@
 #include "ghost.h"
 using namespace emscripten;
 
-inline int manhattan_dist(std::pair<int,int> a, std::pair<int,int> b){
-    return std::abs(a.first - b.first) + std::abs(a.second - b.second);
-}
-
 struct Player {
     int x, y, floor;
     Player() : x(5), y(5), floor(0) {}
@@ -30,7 +26,7 @@ struct Player {
 
 static Player player;
 Maze maze(20, 20, 0, 12345);
-static std::vector<Ghost> ghosts; // the set of ghosts that this client is responsible for
+Ghost ghost(12, 12, 0, true);
 
 void movePlayer(int dx, int dy) {
     int newX = player.x + dx;
@@ -47,10 +43,54 @@ void movePlayer(int dx, int dy) {
     }
 }
 
+inline int manhattan_dist(std::pair<int,int> a, std::pair<int,int> b){
+    return std::abs(a.first - b.first) + std::abs(a.second - b.second);
+}
+
+// logic for ghost movement
+std::pair<int,int> moveGhost(const std::vector<std::pair<int,int>>& playerCoords) {
+    int ghostX = ghost.getX();
+    int ghostY = ghost.getY();
+
+    int closestX = ghostX, closestY = ghostY;
+    int minDist = INT_MAX;
+
+    // find nearest player
+    for (auto [px, py] : playerCoords) {
+        int dist = manhattan_dist({px, py}, {ghostX, ghostY});
+        if (dist < minDist) {
+            minDist = dist;
+            closestX = px;
+            closestY = py;
+        }
+    }
+
+    // compute tentative next step
+    int nextX = ghostX;
+    int nextY = ghostY;
+
+    if (closestX > ghostX) nextX++;
+    else if (closestX < ghostX) nextX--;
+    if (closestY > ghostY) nextY++;
+    else if (closestY < ghostY) nextY--;
+
+    if (maze.getCell(nextX, nextY) != 1) { // impending cell is not a wall
+        ghostX = nextX;
+        ghostY = nextY;
+    }
+
+    ghost.move(ghostX, ghostY); // persist information in ghost
+
+    return {ghostX, ghostY};
+}
+
 int getX() { return player.x; }
 int getY() { return player.y; }
 int getFloor() { return player.floor; }
-int getCell(int x, int y) { return maze.getCell(x, y); }
+int getCell(int x, int y) { 
+    if (ghost.getX() == x && ghost.getY() == y && ghost.isActive()) return 5; // ghost there
+    return maze.getCell(x, y); 
+}
 int getHeight() { return maze.getHeight(); }
 int getWidth() { return maze.getWidth(); }
 void generateMaze(int height, int width, int flr) { maze.generate(height, width, flr); }
@@ -74,4 +114,11 @@ EMSCRIPTEN_BINDINGS(game_module) {
     function("addMessage", &addMessage);
     function("cleanUp", &cleanUp);
     function("tryPickup", &tryPickup);
+
+    function("moveGhost", &moveGhost);
+    register_vector<std::pair<int,int>>("VectorPairIntInt"); // to bind vector<pair<int, int> >
+    value_array<std::pair<int,int>>("PairIntInt") // to bind pair<int,int> 
+        .element(&std::pair<int,int>::first)
+        .element(&std::pair<int,int>::second);
 }
+
