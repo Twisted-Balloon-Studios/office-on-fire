@@ -26,7 +26,7 @@ void Maze::generate(int h, int w, int f){
     for (int i = 0; i < numObstacles; i++) {
         int x = rand() % (width-2) + 1;   // avoid boundary
         int y = rand() % (height-2) + 1;
-        grid[y][x] = 1;
+        grid[y][x] = 10; // fire
     }
 
     // add item (a fire extinguisher) at random place

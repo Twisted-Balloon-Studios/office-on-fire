@@ -13,13 +13,6 @@
   <!-- heads up display -->
   <div id="hud">
     Use arrow keys. You = red. Others = blue.
-
-    <!-- Item slot -->
-    <div id="item-slot" 
-        style="width: 40px; height: 40px; border: 2px solid black; background: white; 
-                display: flex; align-items: center; justify-content: center; position: absolute; top: 10px; left: 10px;">
-      <img id="item-icon" src="" alt="item" style="width: 32px; height: 32px; display: none;" />
-    </div>
   </div> 
 
   <div id="start-screen">
@@ -58,6 +51,14 @@
     fireExtinguisherImg.src = "/assets/fire_extinguisher.png";
     const fireImg = new Image();
     fireImg.src = "/assets/fire_32.png";
+    const ghostImg = new Image();
+    ghostImg.src = "/assets/ghost.png";
+    const brickImg = new Image();
+    brickImg.src = "/assets/brick.png";
+    const selfImg = new Image();
+    selfImg.src = "/assets/self.png";
+    const otherImg = new Image();
+    otherImg.src = "/assets/other.png";
 
     const startScreen = document.getElementById("start-screen");
     const gameCanvas = document.getElementById("game");
@@ -165,7 +166,6 @@
     }
 
     function drawFireWall(x, y, ox, oy, frameCount) {
-      const TILE_SIZE = tile;
       const spriteW = 32, spriteH = 32;
 
       // animation frame
@@ -175,17 +175,129 @@
 
       // scale factor, e.g., 1.5x or 2x
       const scale = 2; 
-      const dw = TILE_SIZE * scale;
-      const dh = TILE_SIZE * scale;
+      const dw = tile * scale;
+      const dh = tile * scale;
 
       // center the bigger fire on the tile
-      const dx = ox + x * TILE_SIZE - (dw - TILE_SIZE)/2;
-      const dy = oy + y * TILE_SIZE - (dh - TILE_SIZE)/2;
+      const dx = ox + x * tile - (dw - tile)/2;
+      const dy = oy + y * tile - (dh - tile)/2;
 
       drawSprite(fireImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
     }
 
+    function drawBrickWall(x, y, ox, oy) {
+      const spriteW = 32, spriteH = 32;
+
+      // animation frame
+      const sx = 0;
+      const sy = 0;
+
+      // scale factor, e.g., 1.5x or 2x
+      const scale = 1;
+      const dw = tile * scale;
+      const dh = tile * scale;
+
+      // center the bigger fire on the tile
+      const dx = ox + x * tile - (dw - tile)/2;
+      const dy = oy + y * tile - (dh - tile)/2;
+
+      drawSprite(brickImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+    }
+
+    function drawItem(x, y, ox, oy) {
+      const spriteW = 64, spriteH = 64;
+
+      // animation frame
+      const sx = 0;
+      const sy = 0;
+
+      // scale factor, e.g., 1.5x or 2x
+      const scale = 2;
+      const dw = tile * scale;
+      const dh = tile * scale;
+
+      // center the bigger fire on the tile
+      const dx = ox + x * tile - (dw - tile)/2;
+      const dy = oy + y * tile - (dh - tile)/2;
+
+      drawSprite(fireExtinguisherImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+    }
+
+    function drawGhost(x, y, ox, oy, direction, update) {
+      const frameCols = 3; // frames per row
+      const frameRows = 4; // directions
+      const spriteW = 24;
+      const spriteH = 32;
+
+      const row = direction; // direction: "N": 0, "E": 1, "S": 2, "W": 3
+
+      const sx = ghostFrameCount % frameCols * spriteW;
+      if (update){
+        ghostFrameCount = (ghostFrameCount + 1)%frameCols;
+      }
+      const sy = row * spriteH;
+
+      const scale = 2*tile / spriteW;
+      const dw = spriteW * scale;
+      const dh = spriteH * scale;
+
+      // center on tile
+      const dx = ox + x * tile - (dw - tile)/2;
+      const dy = oy + y * tile - (dh - tile)/2;
+
+      drawSprite(ghostImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+    }
+
+    function drawSelf(x, y, ox, oy, direction, update) {
+      const frameCols = 4; // frames per row
+      const frameRows = 4; // directions
+      const spriteW = 16;
+      const spriteH = 16;
+
+      const row = direction; // direction: "N": 0, "E": 1, "S": 2, "W": 3
+
+      const sx = selfFrameCount % frameCols * spriteW;
+      if (update){
+        selfFrameCount = (selfFrameCount + 1)%frameCols;
+      }
+      const sy = row * spriteH;
+
+      const scale = 2*tile / spriteW;
+      const dw = spriteW * scale;
+      const dh = spriteH * scale;
+
+      // center on tile
+      const dx = ox + x * tile - (dw - tile)/2;
+      const dy = oy + y * tile - (dh - tile)/2;
+
+      drawSprite(selfImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+    }
+
+    function drawOther(x, y, ox, oy, direction, update, frame) {
+      const frameCols = 4; // frames per row
+      const frameRows = 4; // directions
+      const spriteW = 16;
+      const spriteH = 16;
+
+      const row = direction; // direction: "N": 0, "E": 1, "S": 2, "W": 3
+
+      const sx = frame % frameCols * spriteW;
+      const sy = row * spriteH;
+
+      const scale = 2*tile / spriteW;
+      const dw = spriteW * scale;
+      const dh = spriteH * scale;
+
+      // center on tile
+      const dx = ox + x * tile - (dw - tile)/2;
+      const dy = oy + y * tile - (dh - tile)/2;
+
+      drawSprite(otherImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+    }
+
     let frameCount = 0;
+    let ghostFrameCount = 0;
+    let selfFrameCount = 0;
 
     function render(updateEnvironment) {
       if (gameState !== "playing") return;
@@ -199,16 +311,18 @@
       // draw maze
       for (let x = 0; x < mazeHeight; x++) {
         for (let y = 0; y < mazeWidth; y++) {
-          if (Module.getCell(x, y) === 1) { // wall
+          if (Module.getCell(x, y) === 10) { // fire
             drawFireWall(x, y, offsetX, offsetY, frameCount);
+          }
+          if (Module.getCell(x, y) == 1){ // boundary obstacles
+            drawBrickWall(x, y, offsetX, offsetY);
           }
           if (Module.getCell(x, y) === 2) { // exit
             ctx.fillStyle = "green";
             ctx.fillRect(offsetX + x*tile, offsetY + y*tile, tile, tile);
           }
           if (Module.getCell(x, y) === 3) { // item
-            ctx.fillStyle = "purple";
-            ctx.fillRect(offsetX + x*tile, offsetY + y*tile, tile, tile);
+            drawItem(x, y, offsetX, offsetY);
           }
         }
       }
@@ -218,11 +332,10 @@
 
       // draw ghosts
       for (const [key, g] of Object.entries(ghosts)) {
-        ctx.fillStyle = "pink";
         if (ghosts[key].floor !== Module.getFloor()){
           // don't draw, not on the same floor
         } else {
-          ctx.fillRect(offsetX + (g.x||0)*tile, offsetY + (g.y||0)*tile, tile, tile);
+          drawGhost(g.x, g.y, offsetX, offsetY, Module.ghostGetDirection(), updateEnvironment)
         }
       }
 
@@ -239,13 +352,15 @@
         ctx.fillStyle = key === playerKey ? "red" : "blue";
         if (key !== playerKey && players[key].floor !== Module.getFloor()){
           // don't draw, not on the same floor
-        } else {
-          ctx.fillRect(offsetX + (p.x||0)*tile, offsetY + (p.y||0)*tile, tile, tile);
+        } else if (key === playerKey){ // self
+          drawSelf(p.x, p.y, offsetX, offsetY, Module.getDirection(), updateEnvironment)
           const { sx, sy } = worldToScreen(p.x, p.y);
           drawHealthBar(ctx, sx, sy, p.health ?? 100, 100);
-          if (p.health <= 0){
-            endGame();
-          }
+          if (p.health <= 0){ endGame(); }
+        } else {
+          drawOther(p.x, p.y, offsetX, offsetY, p.direction, updateEnvironment, Math.floor(Math.random() * 4));
+          const { sx, sy } = worldToScreen(p.x, p.y);
+          drawHealthBar(ctx, sx, sy, p.health ?? 100, 100);
         }
       }
 
@@ -294,7 +409,8 @@
           x: Module.getX(),
           y: Module.getY(),
           floor: Module.getFloor(),
-          health: Module.getHealth()
+          health: Module.getHealth(),
+          direction: 0
         });
       });
 
@@ -345,7 +461,8 @@
         x: Module.getX(),
         y: Module.getY(),
         floor: Module.getFloor(),
-        health: Module.getHealth()
+        health: Module.getHealth(),
+        direction: Module.getDirection()
       };
       render(false);
 
@@ -356,7 +473,7 @@
     setInterval(() => {
       if (gameState !== "playing") return;
       render(true);
-    }, 200);
+    }, 100);
 
     setInterval(() => {
         if (gameState !== "playing") return;
@@ -372,7 +489,7 @@
         }
 
         const newGhostPos = Module.moveGhost(playerCoords);
-        console.log("newGhostPos", newGhostPos);
+        //console.log("newGhostPos", newGhostPos);
         channel.send({
           type: "broadcast",
           event: "ghost_moved",
@@ -392,7 +509,7 @@
     }, 1000);
 
     // Render once (in case presence sync hasn't arrived yet)
-    players[playerKey] = { x: Module.getX(), y: Module.getY(), floor: Module.getFloor(), health: Module.getHealth() };
+    players[playerKey] = { x: Module.getX(), y: Module.getY(), floor: Module.getFloor(), health: Module.getHealth(), direction: Module.getDirection() };
     render(false);
   </script>
 </body>

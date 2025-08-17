@@ -10,3 +10,6 @@ In `index.html`, add Supabase URL and KEY.
 python3 -m http.server 8080
 ```
 
+### Attribution
+- Bloody zombie [Svetlana Kushnariova (Cabbit) & Jordan Irwin (AntumDeluge)](https://opengameart.org/content/zombies)
+- Office workers [Unknown](https://opengameart.org/content/office-worker-sprites)

@@ -10,9 +10,9 @@
 using namespace emscripten;
 
 struct Player {
-    int x, y, floor;
+    int x, y, floor, direction;
     int health;
-    Player() : x(5), y(5), floor(0), health(100) {}
+    Player() : x(5), y(5), floor(0), health(100), direction(0) {}
     
     void move(int dx, int dy) {
         x += dx;
@@ -33,14 +33,22 @@ struct Player {
 
 static Player player;
 Maze maze(20, 20, 0, 12345);
-Ghost ghost(12, 12, 0, true);
+Ghost ghost(12, 12, 0, true, 0);
+
+int calcDirection(std::pair<int,int> cur, std::pair<int,int> nxt){
+    if (nxt.second > cur.second) return 2;
+    if (nxt.second < cur.second) return 3;
+    if (nxt.first > cur.first) return 0;
+    return 1;
+}
 
 void movePlayer(int dx, int dy) {
     int newX = player.x + dx;
     int newY = player.y + dy;
-    if (maze.getCell(newX, newY) != 1) { // 1 = wall
+    if (maze.getCell(newX, newY) != 1 && maze.getCell(newX, newY) != 10){ // 1 = wall, 10 = fire
+        player.direction = calcDirection({player.x, player.y}, {newX, newY});
         player.x = newX;
-        player.y = newY;
+        player.y = newY; 
     }
     if (maze.getCell(player.x, player.y) == 2) { // 2 = exit
         player.floor++;
@@ -81,7 +89,7 @@ std::pair<int,int> moveGhost(const std::vector<std::pair<int,int>>& playerCoords
     if (closestY > ghostY) nextY++;
     else if (closestY < ghostY) nextY--;
 
-    if (maze.getCell(nextX, nextY) != 1) { // impending cell is not a wall
+    if (maze.getCell(nextX, nextY) != 1 && maze.getCell(nextX, nextY) != 10){ // impending cell is not a wall nor fire
         ghostX = nextX;
         ghostY = nextY;
     }
@@ -91,17 +99,18 @@ std::pair<int,int> moveGhost(const std::vector<std::pair<int,int>>& playerCoords
     return {ghostX, ghostY};
 }
 
-int getX() { return player.x; }
-int getY() { return player.y; }
-int getFloor() { return player.floor; }
-int getHealth() { return player.health; }
-void takeDamage(int v) { player.takeDamage(v); }
-int getCell(int x, int y) { 
+int getX(){ return player.x; }
+int getY(){ return player.y; }
+int getFloor(){ return player.floor; }
+int getHealth(){ return player.health; }
+int getDirection(){ return player.direction; }
+void takeDamage(int v){ player.takeDamage(v); }
+int getCell(int x, int y){ 
     if (ghost.getX() == x && ghost.getY() == y && ghost.isActive()) return 5; // ghost there
     return maze.getCell(x, y); 
 }
-int getHeight() { return maze.getHeight(); }
-int getWidth() { return maze.getWidth(); }
+int getHeight(){ return maze.getHeight(); }
+int getWidth(){ return maze.getWidth(); }
 void generateMaze(int height, int width, int flr) { maze.generate(height, width, flr); }
 void addMessage(int messageType, int x, int y, int floor, int ghost_id){
     MessageType mt = static_cast<MessageType>(messageType);
@@ -109,6 +118,7 @@ void addMessage(int messageType, int x, int y, int floor, int ghost_id){
 }
 void cleanUp(){ maze.cleanUp(); }
 bool tryPickup(int px, int py, int f){ return maze.tryPickup(px, py, f); }
+int ghostGetDirection(){ return ghost.getDirection(); }
 
 EMSCRIPTEN_BINDINGS(game_module) {
     function("movePlayer", &movePlayer);
@@ -119,6 +129,7 @@ EMSCRIPTEN_BINDINGS(game_module) {
     function("getFloor", &getFloor);
     function("getCell", &getCell);
     function("getHeight", &getHeight);
+    function("getDirection", &getDirection);
     function("getWidth", &getWidth);
     function("generateMaze", &generateMaze);
 
@@ -127,6 +138,7 @@ EMSCRIPTEN_BINDINGS(game_module) {
     function("tryPickup", &tryPickup);
 
     function("moveGhost", &moveGhost);
+    function("ghostGetDirection", &ghostGetDirection);
     register_vector<std::pair<int,int>>("VectorPairIntInt"); // to bind vector<pair<int, int> >
     value_array<std::pair<int,int>>("PairIntInt") // to bind pair<int,int> 
         .element(&std::pair<int,int>::first)
