@@ -11,7 +11,8 @@ using namespace emscripten;
 
 struct Player {
     int x, y, floor;
-    Player() : x(5), y(5), floor(0) {}
+    int health;
+    Player() : x(5), y(5), floor(0), health(100) {}
     
     void move(int dx, int dy) {
         x += dx;
@@ -21,6 +22,12 @@ struct Player {
     void downFloor() {
         floor++;
         x = 0; y = 0; // reset position when changing floors
+    }
+
+    void takeDamage(int v){ // take v hit damage, can be negative
+        health -= v;
+        if (health < 0) health = 0;
+        if (health > 100) health = 100;
     }
 };
 
@@ -87,6 +94,8 @@ std::pair<int,int> moveGhost(const std::vector<std::pair<int,int>>& playerCoords
 int getX() { return player.x; }
 int getY() { return player.y; }
 int getFloor() { return player.floor; }
+int getHealth() { return player.health; }
+void takeDamage(int v) { player.takeDamage(v); }
 int getCell(int x, int y) { 
     if (ghost.getX() == x && ghost.getY() == y && ghost.isActive()) return 5; // ghost there
     return maze.getCell(x, y); 
@@ -105,6 +114,8 @@ EMSCRIPTEN_BINDINGS(game_module) {
     function("movePlayer", &movePlayer);
     function("getX", &getX);
     function("getY", &getY);
+    function("getHealth", &getHealth);
+    function("takeDamage", &takeDamage);
     function("getFloor", &getFloor);
     function("getCell", &getCell);
     function("getHeight", &getHeight);

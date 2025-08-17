@@ -10,8 +10,30 @@
   </style>
 </head>
 <body>
-  <div id="hud">Use arrow keys. You = red. Others = blue.</div>
-  <canvas id="game" width="600" height="600"></canvas>
+  <!-- heads up display -->
+  <div id="hud">
+    Use arrow keys. You = red. Others = blue.
+
+    <!-- Item slot -->
+    <div id="item-slot" 
+        style="width: 40px; height: 40px; border: 2px solid black; background: white; 
+                display: flex; align-items: center; justify-content: center; position: absolute; top: 10px; left: 10px;">
+      <img id="item-icon" src="" alt="item" style="width: 32px; height: 32px; display: none;" />
+    </div>
+  </div> 
+
+  <div id="start-screen">
+    <h1>Office On Fire</h1>
+    <button id="start-button">Start Game</button>
+  </div>
+
+  <canvas id="game" width="600" height="600" style="display:none;"></canvas>
+
+
+  <div id="gameover-screen" style="display:none;">
+    <h1>Game Over</h1>
+    <button id="restart-button">Restart</button>
+  </div>
 
   <script type="module">
     import initModule from "./build/OfficeOnFire.js";
@@ -30,6 +52,41 @@
     // const anonKey = "<SUPABASE_ANONKEY>";
 
     const supabase = createClient(url, anonKey);
+
+    // assets
+    const fireExtinguisherImg = new Image();
+    fireExtinguisherImg.src = "/assets/fire_extinguisher.png";
+    const fireImg = new Image();
+    fireImg.src = "/assets/fire_32.png";
+
+    const startScreen = document.getElementById("start-screen");
+    const gameCanvas = document.getElementById("game");
+    const gameoverScreen = document.getElementById("gameover-screen");
+    const startButton = document.getElementById("start-button");
+    const restartButton = document.getElementById("restart-button");
+    let currentItem = null;
+    let itemIcon = document.getElementById("item-icon")
+    let gameState = "start"
+
+    startButton.onclick = () => {
+      gameState = "playing";
+      startScreen.style.display = "none";
+      gameCanvas.style.display = "block";
+      //startGame(); // initialize maze, players, ghosts, etc.
+    };
+
+    restartButton.onclick = () => {
+      gameState = "playing";
+      gameoverScreen.style.display = "none";
+      gameCanvas.style.display = "block";
+      //startGame(); // reset everything
+    };
+
+    function endGame() {
+      gameState = "gameover";
+      gameCanvas.style.display = "none";
+      gameoverScreen.style.display = "block";
+    }
 
     // --- Identity (stable across reloads) ---
     let playerKey = localStorage.getItem("oof_player_key");
@@ -69,7 +126,69 @@
     const ctx = canvas.getContext("2d");
     const tile = 12, ox = 60, oy = 60;
 
-    function render() {
+    function worldToScreen(x, y) {
+      const cameraX = Module.getX() - Math.floor(canvas.width / tile / 2);
+      const cameraY = Module.getY() - Math.floor(canvas.height / tile / 2);
+      return { sx: (x - cameraX) * tile, sy: (y - cameraY) * tile };
+    }
+
+    function drawHealthBar(ctx, sx, sy, health, maxHealth) {
+      const w = tile, h = 4;
+      const pct = Math.max(0, Math.min(1, health / maxHealth));
+      const bx = sx, by = sy - h - 2;
+
+      // bg
+      ctx.fillStyle = "rgba(0,0,0,0.4)";
+      ctx.fillRect(bx, by, w, h);
+
+      // fill
+      ctx.fillStyle = "red";
+      ctx.fillRect(bx, by, w * pct, h);
+    }
+
+    function updateItemSlot(){
+      const itemIcon = document.getElementById("item-icon");
+
+      if (currentItem === "fire_extinguisher"){
+        itemIcon.src = "/assets/fire_extinguisher_64.png";
+        itemIcon.style.display = "block";
+      } else if (currentItem === "flashlight"){
+        itemIcon.src = "/assets/flashlight_64.png";
+        itemIcon.style.display = "block";
+      } else {
+        itemIcon.style.display = "none"; // empty slot
+      }
+    }
+
+    function drawSprite(img, sx, sy, sw, sh, dx, dy, dw, dh) {
+      ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+    }
+
+    function drawFireWall(x, y, ox, oy, frameCount) {
+      const TILE_SIZE = tile;
+      const spriteW = 32, spriteH = 32;
+
+      // animation frame
+      const frame = frameCount % 8;
+      const sx = frame * spriteW;
+      const sy = 0;
+
+      // scale factor, e.g., 1.5x or 2x
+      const scale = 2; 
+      const dw = TILE_SIZE * scale;
+      const dh = TILE_SIZE * scale;
+
+      // center the bigger fire on the tile
+      const dx = ox + x * TILE_SIZE - (dw - TILE_SIZE)/2;
+      const dy = oy + y * TILE_SIZE - (dh - TILE_SIZE)/2;
+
+      drawSprite(fireImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+    }
+
+    let frameCount = 0;
+
+    function render(updateEnvironment) {
+      if (gameState !== "playing") return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       let offsetX = canvas.width / 2 - Module.getX() * tile;
@@ -81,8 +200,7 @@
       for (let x = 0; x < mazeHeight; x++) {
         for (let y = 0; y < mazeWidth; y++) {
           if (Module.getCell(x, y) === 1) { // wall
-            ctx.fillStyle = "black";
-            ctx.fillRect(offsetX + x*tile, offsetY + y*tile, tile, tile);
+            drawFireWall(x, y, offsetX, offsetY, frameCount);
           }
           if (Module.getCell(x, y) === 2) { // exit
             ctx.fillStyle = "green";
@@ -93,6 +211,9 @@
             ctx.fillRect(offsetX + x*tile, offsetY + y*tile, tile, tile);
           }
         }
+      }
+      if (updateEnvironment){
+        frameCount++;
       }
 
       // draw ghosts
@@ -120,7 +241,28 @@
           // don't draw, not on the same floor
         } else {
           ctx.fillRect(offsetX + (p.x||0)*tile, offsetY + (p.y||0)*tile, tile, tile);
+          const { sx, sy } = worldToScreen(p.x, p.y);
+          drawHealthBar(ctx, sx, sy, p.health ?? 100, 100);
+          if (p.health <= 0){
+            endGame();
+          }
         }
+      }
+
+      // item slot
+      const slotX = 10;
+      const slotY = 10;
+      const slotSize = 40;
+
+      // draw slot box
+      ctx.fillStyle = "white";
+      ctx.fillRect(slotX, slotY, slotSize, slotSize);
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(slotX, slotY, slotSize, slotSize);
+      // draw icon if player has item
+      if (currentItem === "fire_extinguisher") {
+        ctx.drawImage(fireExtinguisherImg, slotX + 4, slotY + 4, slotSize - 8, slotSize - 8);
       }
     }
 
@@ -128,19 +270,19 @@
     channel
       .on("presence", { event: "sync" }, () => {
         players = flattenPresence(channel.presenceState());
-        render();
+        render(false);
       })
       .on("broadcast", { event: "item_picked" }, ({ payload }) => {
         const { messageType, x, y, floor, ghost_id } = payload;
         console.log("received broadcast (item)", payload);
         Module.addMessage(messageType, x, y, floor, ghost_id);
-        render();
+        render(false);
       })
       .on("broadcast", { event: "ghost_moved" }, ({ payload }) => { // update ghosts that are not owned by this client
         const { ghostId, x, y, floor } = payload;
         console.log("received broadcast (ghost)", payload);
         ghosts[ghostId] = { x: x, y: y, floor: floor };
-        render();
+        render(false);
       })
       // (Optional) keep logs muted; movement updates often show as join/leave diffs internally.
       // .on("presence", { event: "join" }, ({ key }) => console.log("join", key))
@@ -152,11 +294,13 @@
           x: Module.getX(),
           y: Module.getY(),
           floor: Module.getFloor(),
+          health: Module.getHealth()
         });
       });
 
     // --- Movement -> update local + track() presence ---
     window.addEventListener("keydown", (e) => {
+      if (gameState !== "playing") return;
 
       if (e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === "ArrowLeft" || e.key === "ArrowRight"){ // movement
         let dx = 0, dy = 0;
@@ -177,6 +321,7 @@
 
         if (Module.tryPickup(x, y, floor)) {
           // picked locally → broadcast to others
+          currentItem = "fire_extinguisher";
           channel.send({
             type: "broadcast",
             event: "item_picked",
@@ -185,6 +330,14 @@
             }
           });
         }
+      } else if (e.key === "v"){
+        if (currentItem){
+          console.log("Used item:", currentItem);
+          // TODO Apply effect here (e.g. heal, extinguish, etc.)
+          currentItem = null;
+          itemIcon.textContent = "";
+        }
+
       }
 
       // Update my local cached presence immediately for snappy rendering
@@ -192,14 +345,21 @@
         x: Module.getX(),
         y: Module.getY(),
         floor: Module.getFloor(),
+        health: Module.getHealth()
       };
-      render();
+      render(false);
 
       // Send new state to others (this does NOT re-subscribe; it's the correct way to update presence)
       channel.track(players[playerKey]);
     });
 
     setInterval(() => {
+      if (gameState !== "playing") return;
+      render(true);
+    }, 200);
+
+    setInterval(() => {
+        if (gameState !== "playing") return;
         // get player positions, call moveGhost, broadcast
         const playerCoords = new Module.VectorPairIntInt();
 
@@ -224,12 +384,16 @@
           y: newGhostPos[1],
           floor: Module.getFloor(),
         };
-        render();
+
+        if (playerKey in players && newGhostPos[0] === players[playerKey].x && newGhostPos[1] === players[playerKey].y){
+          Module.takeDamage(30);
+          players[playerKey].health = Module.getHealth(); // instant update since local
+        }
     }, 1000);
 
     // Render once (in case presence sync hasn't arrived yet)
-    players[playerKey] = { x: Module.getX(), y: Module.getY(), floor: Module.getFloor() };
-    render();
+    players[playerKey] = { x: Module.getX(), y: Module.getY(), floor: Module.getFloor(), health: Module.getHealth() };
+    render(false);
   </script>
 </body>
 </html>
