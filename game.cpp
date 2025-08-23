@@ -35,6 +35,97 @@ static Player player;
 Maze maze(20, 20, 0, 12345);
 Ghost ghost(12, 12, 0, true, 0);
 
+class GameEngine {
+public:
+
+    enum class GameState {
+        PLAYING,
+        PAUSED,
+        GAME_OVER
+    };
+
+    GameEngine() 
+        : player(),
+          maze(20, 20, 0, 12345), 
+          ghost(12, 12, 0, true, 0), 
+          gamestate(GameState::PLAYING) {}
+
+    void tick() {
+        // later: move enemies, update maze state, etc
+    }
+
+    void on_key_down(std::string s) {
+        if (gamestate != GameState::PLAYING) return; // doesn't matter
+        if (s == "ArrowUp" || s == "ArrowDown" || s == "ArrowLeft" || s == "ArrowRight"){
+            int dx = 0, dy = 0;
+            if (s == "ArrowUp") dy = -1;
+            if (s == "ArrowDown") dy = 1;
+            if (s == "ArrowLeft") dx = -1;
+            if (s == "ArrowRight") dx = 1;
+            if (dx == 0 && dy == 0) return;
+            // Module.movePlayer(dx, dy)
+            int newX = player.x + dx;
+            int newY = player.y + dy;
+            if (maze.getCell(newX, newY) != 1 && maze.getCell(newX, newY) != 10){ // 1 = wall, 10 = fire
+                player.direction = calcDirection({player.x, player.y}, {newX, newY});
+                player.x = newX;
+                player.y = newY; 
+            }
+            if (maze.getCell(player.x, player.y) == 2) { // 2 = exit
+                player.floor++;
+                maze.generate(20, 20, player.floor); // new floor
+                player.x = 1;
+                player.y = 1;
+            }
+        } else if (s == "c"){
+
+        }
+    }
+
+    void on_event(){
+        
+    }
+
+    // getters for player state
+    int getX() { return player.x; }
+    int getY() { return player.y; }
+    int getFloor() { return player.floor; }
+    int getHealth() { return player.health; }
+    int getDirection() { return player.direction; }
+
+    void takeDamage(int v) { player.takeDamage(v); }
+
+    int getCell(int x, int y) { 
+        if (ghost.getX() == x && ghost.getY() == y && ghost.isActive()) 
+            return 5; // ghost there
+        return maze.getCell(x, y); 
+    }
+
+    int getHeight() { return maze.getHeight(); }
+    int getWidth() { return maze.getWidth(); }
+
+    void generateMaze(int height, int width, int flr) { 
+        maze.generate(height, width, flr); 
+    }
+
+    void addMessage(int messageType, int x, int y, int floor, int ghost_id) {
+        MessageType mt = static_cast<MessageType>(messageType);
+        maze.insert({mt, x, y, floor, ghost_id});
+    }
+
+    void cleanUp() { maze.cleanUp(); }
+    bool tryPickup(int px, int py, int f) { return maze.tryPickup(px, py, f); }
+
+    void moveGhost() { ghost.move(maze); }
+    int ghostGetDirection() { return ghost.getDirection(); }
+
+private:
+    GameState gamestate;
+    Player player;
+    Maze maze;
+    Ghost ghost;
+};
+
 int calcDirection(std::pair<int,int> cur, std::pair<int,int> nxt){
     if (nxt.second > cur.second) return 2;
     if (nxt.second < cur.second) return 3;
