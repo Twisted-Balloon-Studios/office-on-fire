@@ -3,25 +3,40 @@
 <head>
   <meta charset="utf-8"/>
   <title>OfficeOnFire — Presence Demo</title>
-  <style>
-    body { margin: 0; background:#111; color:#eee; font-family: system-ui, sans-serif; }
-    #hud { padding: 10px; }
-    canvas { display:block; margin: 0 auto; background:#222; border:1px solid #333; }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- heads up display -->
-  <div id="hud">
-    Use arrow keys. You = red. Others = blue.
-  </div> 
+  <div id="hud">Use arrow keys. You = red. Others = blue.</div>
 
   <div id="start-screen">
     <h1>Office On Fire</h1>
     <button id="start-button">Start Game</button>
   </div>
 
-  <canvas id="game" width="600" height="600" style="display:none;"></canvas>
+  <div id="building">
+    <canvas id="game" width="600" height="600" style="display:none;"></canvas>
+    <div id="tower"></div>
+  </div>
 
+  <div class="bird-container bird-container-one">
+    <div class="bird bird-one"></div>
+  </div>        
+  <div class="bird-container bird-container-two">
+    <div class="bird bird-two"></div>
+  </div>  
+  <div class="bird-container bird-container-three">
+    <div class="bird bird-three"></div>
+  </div> 
+  <div class="bird-container bird-container-four">
+    <div class="bird bird-four"></div>
+  </div>
+<div id="clouds">
+	<div class="cloud x1"></div>
+	<div class="cloud x2"></div>
+	<div class="cloud x3"></div>
+	<div class="cloud x4"></div>
+	<div class="cloud x5"></div>
+</div>
 
   <div id="gameover-screen" style="display:none;">
     <h1>Game Over</h1>
