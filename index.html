@@ -125,7 +125,7 @@
     // --- Canvas render ---
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
-    const tile = 12, ox = 60, oy = 60;
+    const tile = 30, ox = 60, oy = 60;
 
     function worldToScreen(x, y) {
       const cameraX = Module.getX() - Math.floor(canvas.width / tile / 2);
@@ -311,17 +311,17 @@
       // draw maze
       for (let x = 0; x < mazeHeight; x++) {
         for (let y = 0; y < mazeWidth; y++) {
-          if (Module.getCell(x, y) === 10) { // fire
+          if (Module.getCell(x, y) === 'F') { // fire
             drawFireWall(x, y, offsetX, offsetY, frameCount);
           }
-          if (Module.getCell(x, y) == 1){ // boundary obstacles
+          if (Module.getCell(x, y) == '#'){ // boundary obstacles
             drawBrickWall(x, y, offsetX, offsetY);
           }
-          if (Module.getCell(x, y) === 2) { // exit
+          if (Module.getCell(x, y) === 'E') { // exit
             ctx.fillStyle = "green";
             ctx.fillRect(offsetX + x*tile, offsetY + y*tile, tile, tile);
           }
-          if (Module.getCell(x, y) === 3) { // item
+          if (Module.getCell(x, y) === 'I') { // item
             drawItem(x, y, offsetX, offsetY);
           }
         }
@@ -437,6 +437,7 @@
 
         if (Module.tryPickup(x, y, floor)) {
           // picked locally → broadcast to others
+          console.log("picked up")
           currentItem = "fire_extinguisher";
           channel.send({
             type: "broadcast",
@@ -449,6 +450,10 @@
       } else if (e.key === "v"){
         if (currentItem){
           console.log("Used item:", currentItem);
+          const x = Module.getX();
+          const y = Module.getY();
+          const floor = Module.getFloor();
+          Module.tryUse(x, y, floor);
           // TODO Apply effect here (e.g. heal, extinguish, etc.)
           currentItem = null;
           itemIcon.textContent = "";

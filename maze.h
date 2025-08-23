@@ -25,7 +25,7 @@ public:
     int getWidth() const;
     int getHeight() const;
     int getSeed() const;
-    int getCell(int x, int y) const;
+    char getCell(int x, int y) const;
 
     void apply(const Message& m);
     void apply(Message&& m);
@@ -33,6 +33,8 @@ public:
     void insert(Message&& msg);
 
     void cleanUp();
+
+    void from_file(const std::string& filename);
 
     struct Compare {
         bool operator()(const Message& a, const Message& b) const {
@@ -42,6 +44,6 @@ public:
 
 private:
     int height, width, seed, flr;
-    std::vector<std::vector<int>> grid;
+    std::vector<std::vector<char>> grid;
     std::set<Message, Compare> messageList;
 };
