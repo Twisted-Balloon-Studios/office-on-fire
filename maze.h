@@ -5,7 +5,8 @@
 
 enum class MessageType {
     ITEM_PICKED_UP,
-    GHOST_ELIMINATED
+    GHOST_ELIMINATED,
+    FIRE_EXTINGUISHED
 };
 
 struct Message {
@@ -26,6 +27,7 @@ public:
     int getHeight() const;
     int getSeed() const;
     char getCell(int x, int y) const;
+    void setCell(int x, int y, char c);
 
     void apply(const Message& m);
     void apply(Message&& m);

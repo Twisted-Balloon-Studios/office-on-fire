@@ -83,6 +83,10 @@ char Maze::getCell(int x, int y) const {
     if (x < 0 || x >= height || y < 0 || y >= width) return '#'; // wall
     return grid[x][y];
 }
+void Maze::setCell(int x, int y, char c){
+    if (x < 0 || x >= height || y < 0 || y >= width) return;
+    grid[x][y] = c;
+}
 
 void Maze::apply(const Message& m){
     if (m.floor != flr) return;
@@ -92,6 +96,9 @@ void Maze::apply(const Message& m){
             break;
         case MessageType::GHOST_ELIMINATED:
             // TODO
+            break;
+        case MessageType::FIRE_EXTINGUISHED:
+            grid[m.x][m.y] = '.'; // empty cell
             break;
         default:
             // TODO
@@ -107,6 +114,9 @@ void Maze::apply(Message&& m){
             break;
         case MessageType::GHOST_ELIMINATED:
             // TODO
+            break;
+        case MessageType::FIRE_EXTINGUISHED:
+            grid[m.x][m.y] = '.'; // empty cell
             break;
         default:
             // TODO

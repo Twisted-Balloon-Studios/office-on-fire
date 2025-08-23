@@ -55,7 +55,6 @@ void movePlayer(int dx, int dy) {
     int newX = player.x + dx;
     int newY = player.y + dy;
     if (maze.getCell(newX, newY) != '#' && maze.getCell(newX, newY) != 'F'){ // 1 = wall, 10 = fire
-        player.direction = calcDirection({player.x, player.y}, {newX, newY});
         player.x = newX;
         player.y = newY; 
     }
@@ -113,6 +112,7 @@ int getY(){ return player.y; }
 int getFloor(){ return player.floor; }
 int getHealth(){ return player.health; }
 int getDirection(){ return player.direction; }
+void setDirection(int dir){ player.direction = dir; }
 void takeDamage(int v){ player.takeDamage(v); }
 std::string getCell(int x, int y){ 
     if (ghost.getX() == x && ghost.getY() == y && ghost.isActive()) return "G"; // ghost there
@@ -131,10 +131,17 @@ bool tryPickup(int px, int py, int f){
     if (res) player.getItem();
     return res;
 }
-bool tryUse(int px, int py, int f){
+
+std::pair<bool, std::pair<int,int> > tryUse(int f){
     int dx[] = {1, -1, 0, 0};
-    int dy[] = {1, -1, 0, 0};
-    return false;
+    int dy[] = {0, 0, 1, -1};
+    int dirx = player.x + dx[player.direction];
+    int diry = player.y + dy[player.direction];
+    if (maze.getCell(dirx, diry) == 'F'){
+        maze.setCell(dirx, diry, '.');
+        return {true, {dirx, diry}}; // extinguished the fire
+    }
+    return {false, {-1, -1}};
 }
 int ghostGetDirection(){ return ghost.getDirection(); }
 
@@ -148,6 +155,7 @@ EMSCRIPTEN_BINDINGS(game_module) {
     function("getCell", &getCell);
     function("getHeight", &getHeight);
     function("getDirection", &getDirection);
+    function("setDirection", &setDirection);
     function("getWidth", &getWidth);
     function("generateMaze", &generateMaze);
 
@@ -162,5 +170,8 @@ EMSCRIPTEN_BINDINGS(game_module) {
     value_array<std::pair<int,int>>("PairIntInt") // to bind pair<int,int> 
         .element(&std::pair<int,int>::first)
         .element(&std::pair<int,int>::second);
+    value_array<std::pair<bool, std::pair<int,int> > >("BoolPairIntInt")
+        .element(&std::pair<bool, std::pair<int,int> >::first)
+        .element(&std::pair<bool, std::pair<int,int> >::second);
 }
 

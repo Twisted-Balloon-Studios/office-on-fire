@@ -389,7 +389,13 @@
       })
       .on("broadcast", { event: "item_picked" }, ({ payload }) => {
         const { messageType, x, y, floor, ghost_id } = payload;
-        console.log("received broadcast (item)", payload);
+        console.log("received broadcast (item_picked)", payload);
+        Module.addMessage(messageType, x, y, floor, ghost_id);
+        render(false);
+      })
+      .on("broadcast", { event: "fire_extinguished" }, ({ payload }) => {
+        const { messageType, x, y, floor, ghost_id } = payload;
+        console.log("received broadcast (fire_extinguished)", payload);
         Module.addMessage(messageType, x, y, floor, ghost_id);
         render(false);
       })
@@ -420,10 +426,22 @@
 
       if (e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === "ArrowLeft" || e.key === "ArrowRight"){ // movement
         let dx = 0, dy = 0;
-        if (e.key === "ArrowUp")    dy = -1;
-        if (e.key === "ArrowDown")  dy = 1;
-        if (e.key === "ArrowLeft")  dx = -1;
-        if (e.key === "ArrowRight") dx = 1;
+        if (e.key === "ArrowUp"){
+          dy = -1;
+          Module.setDirection(3);
+        }
+        if (e.key === "ArrowDown"){
+          dy = 1;
+          Module.setDirection(2);
+        }
+        if (e.key === "ArrowLeft"){
+          dx = -1;
+          Module.setDirection(1);
+        }
+        if (e.key === "ArrowRight"){
+          dx = 1;
+          Module.setDirection(0);
+        }
         if (!dx && !dy) return;
 
         Module.movePlayer(dx, dy);
@@ -453,10 +471,20 @@
           const x = Module.getX();
           const y = Module.getY();
           const floor = Module.getFloor();
-          Module.tryUse(x, y, floor);
+          const res = Module.tryUse(floor);
+          console.log(res)
+          if (res[0]){ // item actually has some use
+            console.log("actually used")
+            channel.send({
+              type: "broadcast",
+              event: "fire_extinguished",
+              payload: { 
+                messageType: 2, x: res[1][0], y: res[1][1], floor, ghost_id: 0 
+              }
+            });
+          }
           // TODO Apply effect here (e.g. heal, extinguish, etc.)
           currentItem = null;
-          itemIcon.textContent = "";
         }
 
       }
