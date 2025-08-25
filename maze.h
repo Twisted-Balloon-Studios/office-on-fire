@@ -21,6 +21,8 @@ public:
 
     void generate(int h, int w, int f);
 
+    void tick();
+
     bool tryPickup(int px, int py, int f);
 
     int getWidth() const;
@@ -46,6 +48,8 @@ public:
 
 private:
     int height, width, seed, flr;
+    double p;
     std::vector<std::vector<char>> grid;
     std::set<Message, Compare> messageList;
+    std::set<std::pair<int, int> > s;
 };

@@ -2,20 +2,25 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <vector>
+#include <random>
+#include <chrono>
 #include "maze.h"
 
-Maze::Maze(int h, int w, int f, int sd): height(h), width(w), seed(sd), flr(f){
+Maze::Maze(int h, int w, int f, int sd): height(h), width(w), seed(sd), flr(f), p((double)0.5){
     generate(h, w, f);
 }
 
 void Maze::generate(int h, int w, int f){
     if (f <= 1){
+        s.clear();
         height = h;
         width = w;
         flr = f;
         srand(seed*f);
         from_file("floors/floor" + std::to_string(f) + ".txt");
     } else {
+        s.clear();
         height = h;
         width = w;
         flr = f;
@@ -35,15 +40,15 @@ void Maze::generate(int h, int w, int f){
         // add random obstacles
         int numObstacles = (width * height) / 20; // 10% of grid
         for (int i = 0; i < numObstacles; i++) {
-            int x = rand() % (width-2) + 1;   // avoid boundary
-            int y = rand() % (height-2) + 1;
-            grid[y][x] = 'F'; // fire
+            int x = rand() % (height-2) + 1;   // avoid boundary
+            int y = rand() % (width-2) + 1;
+            grid[x][y] = 'F'; // fire
         }
 
         // add item (a fire extinguisher) at random place
-        int extinguisher_x = rand() % (width-2) + 1;
-        int extinguisher_y = rand() % (height-2) + 1;
-        grid[extinguisher_y][extinguisher_x] = 'I';
+        int extinguisher_x = rand() % (height-2) + 1;
+        int extinguisher_y = rand() % (width-2) + 1;
+        grid[extinguisher_x][extinguisher_y] = 'I';
         // designate a 2x2 exit at bottom-right corner
         grid[height-3][width-3] = 'E';
         grid[height-3][width-2] = 'E';
@@ -175,5 +180,38 @@ void Maze::from_file(const std::string& filename){
     }
 
     grid = std::move(newGrid);
+}
+
+void Maze::tick(){
+
+    // 1. For any temporary, with probability p, set it to fire
+    std::mt19937 eng(std::chrono::high_resolution_clock::now().time_since_epoch().count());
+    std::uniform_real_distribution<double> distr(0.0, 1.0);
+
+    std::vector<std::pair<int,int> > erasure;
+    for (auto it = s.begin(); it != s.end(); it++){
+        if (grid[it -> first][it -> second] == 'T'){
+            double phat = distr(eng);
+            if (phat <= p){
+                grid[it -> first][it -> second] = 'F';
+                erasure.push_back(*it);
+            }
+        } else {
+            erasure.push_back(*it);
+        }
+    }
+    for (auto it = erasure.begin(); it != erasure.end(); it++){
+        s.erase(*it);
+    }
+    erasure.clear();
+
+    // 2. Select random place to set to temporary
+    int tx = rand() % (height-2) + 1;
+    int ty = rand() % (width-2) + 1;
+    if (grid[tx][ty] == '.'){
+        grid[tx][ty] = 'T';
+        s.insert({tx, ty});
+    }
+
 }
 

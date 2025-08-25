@@ -126,6 +126,7 @@ void addMessage(int messageType, int x, int y, int floor, int ghost_id){
     maze.insert({mt, x, y, floor, ghost_id});
 }
 void cleanUp(){ maze.cleanUp(); }
+void tick(){ maze.tick(); }
 bool tryPickup(int px, int py, int f){ 
     bool res = maze.tryPickup(px, py, f);
     if (res) player.getItem();
@@ -158,6 +159,7 @@ EMSCRIPTEN_BINDINGS(game_module) {
     function("setDirection", &setDirection);
     function("getWidth", &getWidth);
     function("generateMaze", &generateMaze);
+    function("tick", &tick);
 
     function("addMessage", &addMessage);
     function("cleanUp", &cleanUp);

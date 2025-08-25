@@ -340,6 +340,10 @@
           if (Module.getCell(x, y) === 'I') { // item
             drawItem(x, y, offsetX, offsetY);
           }
+          if (Module.getCell(x, y) === 'T'){ // temporary fire
+            ctx.fillStyle = "#7D0B0B";
+            ctx.fillRect(offsetX + x*tile, offsetY + y*tile, tile, tile);
+          }
         }
       }
       if (updateEnvironment){
@@ -526,6 +530,7 @@
 
     setInterval(() => {
         if (gameState !== "playing") return;
+        Module.tick();
         // get player positions, call moveGhost, broadcast
         const playerCoords = new Module.VectorPairIntInt();
 
