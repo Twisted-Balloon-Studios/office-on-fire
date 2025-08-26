@@ -153,6 +153,40 @@ for (let row = 0; row < windowRows; row++) {
     const stoneTileImg = new Image();
     stoneTileImg.src = "/assets/stone_tile_1024.png";
 
+
+    // audio
+
+    const fireExtinguisherSound = new Audio('/assets/fire_extinguisher.mp3');
+    function playFireExtinguisherSound(){ fireExtinguisherSound.currentTime = 0; fireExtinguisherSound.play(); }
+
+    let timeoutId = null; // store loop's timer
+    let sound = null;
+
+    function playSoundLoopWithRandomDelay(src, base=40, std=10) {
+      sound = new Audio(src);
+
+      function playAndScheduleNext() {
+        sound.currentTime = 0;
+        sound.play();
+
+        const min = base - std;
+        const max = base + std;
+        const randomDelay = Math.random() * (max - min) + min;
+
+        timeoutId = setTimeout(playAndScheduleNext, randomDelay * 1000);
+      }
+
+      playAndScheduleNext(); // start the first play
+    }
+
+    function stopSoundLoop() {
+      clearTimeout(timeoutId);
+      if (sound) {
+        sound.pause();
+        sound.currentTime = 0;
+      }
+    }
+
     const startScreen = document.getElementById("start-screen");
     const gameCanvas = document.getElementById("game");
     const gameoverScreen = document.getElementById("gameover-screen");
@@ -165,6 +199,8 @@ for (let row = 0; row < windowRows; row++) {
 
     startButton.onclick = () => {
       gameState = "playing";
+      stopSoundLoop();
+      playSoundLoopWithRandomDelay("/assets/help_me.mp3", 10, 5);
       startScreen.style.display = "none";
       gameCanvas.style.display = "block";
       //startGame(); // initialize maze, players, ghosts, etc.
@@ -172,12 +208,15 @@ for (let row = 0; row < windowRows; row++) {
 
     restartButton.onclick = () => {
       gameState = "playing";
+      stopSoundLoop();
+      playSoundLoopWithRandomDelay("/assets/help_me.mp3", 10, 5);
       gameoverScreen.style.display = "none";
       gameCanvas.style.display = "block";
       //startGame(); // reset everything
     };
 
     function endGame() {
+      stopSoundLoop();
       gameState = "gameover";
       gameCanvas.style.display = "none";
       gameoverScreen.style.display = "block";
@@ -563,6 +602,7 @@ for (let row = 0; row < windowRows; row++) {
       .on("broadcast", { event: "fire_extinguished" }, ({ payload }) => {
         const { messageType, x, y, floor, ghost_id } = payload;
         console.log("received broadcast (fire_extinguished)", payload);
+        playFireExtinguisherSound(); // play for others
         Module.addMessage(messageType, x, y, floor, ghost_id);
         render(false);
       })
@@ -664,6 +704,7 @@ for (let row = 0; row < windowRows; row++) {
           if (currentItem === "fire_extinguisher"){
             if (res[0]){ // item actually has some use
               console.log("Used fire extinguisher")
+              playFireExtinguisherSound();
               channel.send({
                 type: "broadcast",
                 event: "fire_extinguished",
