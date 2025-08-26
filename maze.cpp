@@ -5,14 +5,16 @@
 #include <vector>
 #include <random>
 #include <chrono>
+#include <algorithm>
 #include "maze.h"
 
 Maze::Maze(int h, int w, int f, int sd): height(h), width(w), seed(sd), flr(f), p((double)0.5){
+    item_codes = {'I', 'L', 'N', 'H'};
     generate(h, w, f);
 }
 
 void Maze::generate(int h, int w, int f){
-    if (f <= 1){
+    if (f <= 2){
         s.clear();
         height = h;
         width = w;
@@ -73,12 +75,13 @@ void Maze::generate(int h, int w, int f){
     }
 }
 
-bool Maze::tryPickup(int px, int py, int f){
-    if (flr != f) return false; // not on the correct floor
-    if (px < 0 || px >= height || py < 0 || py >= width) return false; // index out of bound
-    if (grid[px][py] != 'I') return false; // not item
+int Maze::tryPickup(int px, int py, int f){
+    if (flr != f) return -1; // not on the correct floor
+    if (px < 0 || px >= height || py < 0 || py >= width) return -1; // index out of bound
+    auto it = std::find(item_codes.begin(), item_codes.end(), grid[px][py]);
+    if (it == item_codes.end()) return -1; // not an item
     grid[px][py] = '.'; // picked up item, empty cell now
-    return true; // must send message at JS end
+    return std::distance(item_codes.begin(), it); // must send message at JS end
 }
 
 int Maze::getSeed() const { return seed; }

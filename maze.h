@@ -23,7 +23,7 @@ public:
 
     void tick();
 
-    bool tryPickup(int px, int py, int f);
+    int tryPickup(int px, int py, int f);
 
     int getWidth() const;
     int getHeight() const;
@@ -52,4 +52,5 @@ private:
     std::vector<std::vector<char>> grid;
     std::set<Message, Compare> messageList;
     std::set<std::pair<int, int> > s;
+    std::vector<char> item_codes;
 };

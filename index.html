@@ -65,13 +65,19 @@
 
     // assets
     const fireExtinguisherImg = new Image();
-    fireExtinguisherImg.src = "/assets/fire_extinguisher.png";
+    fireExtinguisherImg.src = "/assets/fire_extinguisher_1024.png";
+    const laserImg = new Image();
+    laserImg.src = "/assets/laser_1024.png";
+    const potionImg = new Image();
+    potionImg.src = "/assets/potion_1024.png";
+    const energyCubeImg = new Image();
+    energyCubeImg.src = "/assets/energy_cube_gpt_1024.png";
     const fireImg = new Image();
     fireImg.src = "/assets/fire_256.png";
     const ghostImg = new Image();
     ghostImg.src = "/assets/ghost_512.png";
     const brickImg = new Image();
-    brickImg.src = "/assets/brick.png";
+    brickImg.src = "/assets/brick_gpt_1024.png";
     const selfImg = new Image();
     selfImg.src = "/assets/self_1024.png";
     const otherImg = new Image();
@@ -203,7 +209,7 @@
     }
 
     function drawBrickWall(x, y, ox, oy) {
-      const spriteW = 32, spriteH = 32;
+      const spriteW = 1024, spriteH = 1024;
 
       // animation frame
       const sx = 0;
@@ -221,8 +227,8 @@
       drawSprite(brickImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
     }
 
-    function drawItem(x, y, ox, oy) {
-      const spriteW = 64, spriteH = 64;
+    function drawItem(item_id, x, y, ox, oy) {
+      const spriteW = 1024, spriteH = 1024;
 
       // animation frame
       const sx = 0;
@@ -236,8 +242,15 @@
       // center the bigger fire on the tile
       const dx = ox + x * tile - (dw - tile)/2;
       const dy = oy + y * tile - (dh - tile)/2;
-
-      drawSprite(fireExtinguisherImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+      if (item_id == 0){
+        drawSprite(fireExtinguisherImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+      } else if (item_id == 1){
+        drawSprite(laserImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+      } else if (item_id == 2){
+        drawSprite(energyCubeImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+      } else if (item_id == 3){
+        drawSprite(potionImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+      }
     }
 
     function drawGhost(x, y, ox, oy, direction, update) {
@@ -338,8 +351,17 @@
             ctx.fillStyle = "green";
             ctx.fillRect(offsetX + x*tile, offsetY + y*tile, tile, tile);
           }
-          if (Module.getCell(x, y) === 'I') { // item
-            drawItem(x, y, offsetX, offsetY);
+          if (Module.getCell(x, y) === 'I') { // fire extinguisher
+            drawItem(0, x, y, offsetX, offsetY);
+          }
+          if (Module.getCell(x, y) == 'L'){ // laser
+            drawItem(1, x, y, offsetX, offsetY);
+          }
+          if (Module.getCell(x, y) == 'N'){ // energy ball
+            drawItem(2, x, y, offsetX, offsetY);
+          }
+          if (Module.getCell(x, y) == 'H'){ // potion
+            drawItem(3, x, y, offsetX, offsetY);
           }
           if (Module.getCell(x, y) === 'T'){ // temporary fire
             ctx.fillStyle = "#7D0B0B";
@@ -388,7 +410,7 @@
       // item slot
       const slotX = 10;
       const slotY = 10;
-      const slotSize = 40;
+      const slotSize = 64;
 
       // draw slot box
       ctx.fillStyle = "white";
@@ -399,6 +421,12 @@
       // draw icon if player has item
       if (currentItem === "fire_extinguisher") {
         ctx.drawImage(fireExtinguisherImg, slotX + 4, slotY + 4, slotSize - 8, slotSize - 8);
+      } else if (currentItem === "laser"){
+        ctx.drawImage(laserImg, slotX + 4, slotY + 4, slotSize - 8, slotSize - 8);
+      } else if (currentItem === "energy_cube"){
+        ctx.drawImage(energyCubeImg, slotX + 4, slotY + 4, slotSize - 8, slotSize - 8);
+      } else if (currentItem === "potion"){
+        ctx.drawImage(potionImg, slotX + 4, slotY + 4, slotSize - 8, slotSize - 8);
       }
 
       ctx.font = "24px 'Pixelify Sans'";
@@ -481,10 +509,20 @@
 
         console.log("tried to pick up", x, y, floor);
 
-        if (Module.tryPickup(x, y, floor)) {
+        let res = Module.tryPickup(x, y, floor);
+
+        if (res !== -1) {
           // picked locally → broadcast to others
           console.log("picked up")
-          currentItem = "fire_extinguisher";
+          if (res === 0){
+            currentItem = "fire_extinguisher";
+          } else if (res === 1){
+            currentItem = "laser";
+          } else if (res === 2){
+            currentItem = "energy_cube";
+          } else if (res === 3){
+            currentItem = "potion";
+          }
           channel.send({
             type: "broadcast",
             event: "item_picked",
@@ -501,17 +539,24 @@
           const floor = Module.getFloor();
           const res = Module.tryUse(floor);
           console.log(res)
-          if (res[0]){ // item actually has some use
-            console.log("actually used")
-            channel.send({
-              type: "broadcast",
-              event: "fire_extinguished",
-              payload: { 
-                messageType: 2, x: res[1][0], y: res[1][1], floor, ghost_id: 0 
-              }
-            });
+          if (currentItem === "fire_extinguisher"){
+            if (res[0]){ // item actually has some use
+              channel.send({
+                type: "broadcast",
+                event: "fire_extinguished",
+                payload: { 
+                  messageType: 2, x: res[1][0], y: res[1][1], floor, ghost_id: 0 
+                }
+              });
+            }
+          } else if (currentItem === "laser"){
+            // TODO illuminate path
+          } else if (currentItem === "energy_cube"){
+            // TODO kill fire
+          } else if (currentItem === "potion"){
+            // TODO heal
           }
-          // TODO Apply effect here (e.g. heal, extinguish, etc.)
+
           currentItem = null;
         }
 

@@ -127,9 +127,10 @@ void addMessage(int messageType, int x, int y, int floor, int ghost_id){
 }
 void cleanUp(){ maze.cleanUp(); }
 void tick(){ maze.tick(); }
-bool tryPickup(int px, int py, int f){ 
-    bool res = maze.tryPickup(px, py, f);
-    if (res) player.getItem();
+int tryPickup(int px, int py, int f){ 
+    // return -1 if nothing to pick up, else return item ID
+    int res = maze.tryPickup(px, py, f);
+    if (res >= 0) player.getItem();
     return res;
 }
 

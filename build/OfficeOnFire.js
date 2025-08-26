@@ -44,7 +44,7 @@ if (ENVIRONMENT_IS_NODE) {
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmp1yrosxud.js
+// include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmp0gp9iry8.js
 
   Module['expectedDataFileDownloads'] ??= 0;
   Module['expectedDataFileDownloads']++;
@@ -208,25 +208,25 @@ Module['FS_createPath']("/", "floors", true, true);
     }
 
     }
-    loadPackage({"files": [{"filename": "/floors/floor0.txt", "start": 0, "end": 1637}, {"filename": "/floors/floor1.txt", "start": 1637, "end": 3274}], "remote_package_size": 3274});
+    loadPackage({"files": [{"filename": "/floors/README.md", "start": 0, "end": 233}, {"filename": "/floors/floor0.txt", "start": 233, "end": 1870}, {"filename": "/floors/floor1.txt", "start": 1870, "end": 3507}, {"filename": "/floors/floor2.txt", "start": 3507, "end": 5144}], "remote_package_size": 5144});
 
   })();
 
-// end include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmp1yrosxud.js
-// include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmpi725n_68.js
+// end include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmp0gp9iry8.js
+// include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmpx5b3sqsb.js
 
     // All the pre-js content up to here must remain later on, we need to run
     // it.
     if ((typeof ENVIRONMENT_IS_WASM_WORKER != 'undefined' && ENVIRONMENT_IS_WASM_WORKER) || (typeof ENVIRONMENT_IS_PTHREAD != 'undefined' && ENVIRONMENT_IS_PTHREAD) || (typeof ENVIRONMENT_IS_AUDIO_WORKLET != 'undefined' && ENVIRONMENT_IS_AUDIO_WORKLET)) Module['preRun'] = [];
     var necessaryPreJSTasks = Module['preRun'].slice();
-  // end include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmpi725n_68.js
-// include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmprxl3yoj2.js
+  // end include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmpx5b3sqsb.js
+// include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmp8uhebik2.js
 
     if (!Module['preRun']) throw 'Module.preRun should exist because file support used it; did a pre-js delete it?';
     necessaryPreJSTasks.forEach((task) => {
       if (Module['preRun'].indexOf(task) < 0) throw 'All preRun tasks that exist before user pre-js code should remain after; did you replace Module or modify Module.preRun?';
     });
-  // end include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmprxl3yoj2.js
+  // end include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmp8uhebik2.js
 
 
 var arguments_ = [];
