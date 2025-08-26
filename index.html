@@ -45,6 +45,60 @@
     <button id="restart-button">Restart</button>
   </div>
 
+<script>
+// script for setting up the tower
+const tower = document.getElementById("tower");
+
+const towerHeight = 1000;
+const towerWidthTop = 600;
+const towerWidthBottom = towerWidthTop * 0.8;
+const windowRows = 20;
+const windowsPerRow = 6;
+const tan_theta = (towerWidthTop - towerWidthBottom)/2/towerHeight;
+
+const windowBaseWidth = 40;
+const windowHeight = 25;
+
+for (let row = 0; row < windowRows; row++) {
+    const y = (row / windowRows) * towerHeight + 20;
+    const rowRatio = y / towerHeight;
+
+    const towerRowWidth = towerWidthTop - (towerWidthTop - towerWidthBottom) * (y / towerHeight);
+    const xOffset = (towerWidthTop - towerRowWidth) / 2;
+
+    for (let col = 0; col < windowsPerRow; col++) {
+        const win = document.createElement('div');
+        win.className = 'window';
+
+        const spacing = towerRowWidth / (windowsPerRow + 1);
+        const centerX = xOffset + spacing * (col + 1);
+
+        const winMidWidth = windowBaseWidth*(towerRowWidth/towerWidthTop);
+        const winTopWidth = winMidWidth + (windowHeight/towerHeight)*tan_theta;
+        const winBottomWidth = winMidWidth - (windowHeight/towerHeight)*tan_theta;
+
+        const left = centerX - winTopWidth / 2;
+        win.style.left = `${left}px`;
+        win.style.top = `${y}px`;
+        win.style.width = `${winTopWidth}px`;
+        win.style.height = `${windowHeight}px`;
+
+        const bottomInset = (winTopWidth - winBottomWidth) / 2;
+        const bottomLeft = (bottomInset / winTopWidth) * 100;
+        const bottomRight = 100 - bottomLeft;
+
+        win.style.clipPath = `polygon(
+            0% 0%,            /* top-left */
+            100% 0%,          /* top-right */
+            ${bottomRight}% 100%, /* bottom-right */
+            ${bottomLeft}% 100%   /* bottom-left */
+        )`;
+
+        tower.appendChild(win);
+    }
+}
+</script>
+
   <script type="module">
     import initModule from "./build/OfficeOnFire.js";
     import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
