@@ -11,13 +11,13 @@ Ghost::Ghost(int _x, int _y, int _floor, bool _active, int _direction): x(_x), y
 void Ghost::move(int _x, int _y){
     if (!active) return; // if not active, why bother
     if (_y < y){
-        direction = 0; // N
+        direction = 3; // N
     } else if (_x > x){
-        direction = 1; // E
+        direction = 0; // E
     } else if (_y > y){
         direction = 2; // S
     } else {
-        direction = 3; // W
+        direction = 1; // W
     }
     x = _x;
     y = _y;

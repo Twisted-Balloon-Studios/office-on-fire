@@ -5,6 +5,7 @@
   <title>Office On Fire</title>
   <link rel="icon" type="image/gif" href="/assets/fire.gif">
   <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;700&display=swap" rel="stylesheet"> <!-- Pixelify Sans from Google Fonts -->
 </head>
 <body>
   <div id="hud">Arrow keys (move), 'c' (pick up item), 'v' (use item)</div>
@@ -66,13 +67,13 @@
     const fireExtinguisherImg = new Image();
     fireExtinguisherImg.src = "/assets/fire_extinguisher.png";
     const fireImg = new Image();
-    fireImg.src = "/assets/fire_32.png";
+    fireImg.src = "/assets/fire_256.png";
     const ghostImg = new Image();
-    ghostImg.src = "/assets/ghost.png";
+    ghostImg.src = "/assets/ghost_512.png";
     const brickImg = new Image();
     brickImg.src = "/assets/brick.png";
     const selfImg = new Image();
-    selfImg.src = "/assets/self.png";
+    selfImg.src = "/assets/self_1024.png";
     const otherImg = new Image();
     otherImg.src = "/assets/other.png";
 
@@ -152,14 +153,14 @@
     function drawHealthBar(ctx, sx, sy, health, maxHealth) {
       const w = tile, h = 4;
       const pct = Math.max(0, Math.min(1, health / maxHealth));
-      const bx = sx, by = sy - h - 2;
+      const bx = sx, by = sy - h - 14;
 
       // bg
       ctx.fillStyle = "rgba(0,0,0,0.4)";
       ctx.fillRect(bx, by, w, h);
 
       // fill
-      ctx.fillStyle = "red";
+      ctx.fillStyle = "green";
       ctx.fillRect(bx, by, w * pct, h);
     }
 
@@ -182,7 +183,7 @@
     }
 
     function drawFireWall(x, y, ox, oy, frameCount) {
-      const spriteW = 32, spriteH = 32;
+      const spriteW = 256, spriteH = 256;
 
       // animation frame
       const frame = frameCount % 8;
@@ -240,10 +241,10 @@
     }
 
     function drawGhost(x, y, ox, oy, direction, update) {
-      const frameCols = 3; // frames per row
+      const frameCols = 4; // frames per row
       const frameRows = 4; // directions
-      const spriteW = 24;
-      const spriteH = 32;
+      const spriteW = 512;
+      const spriteH = 512;
 
       const row = direction; // direction: "N": 0, "E": 1, "S": 2, "W": 3
 
@@ -267,8 +268,8 @@
     function drawSelf(x, y, ox, oy, direction, update) {
       const frameCols = 4; // frames per row
       const frameRows = 4; // directions
-      const spriteW = 16;
-      const spriteH = 16;
+      const spriteW = 1024;
+      const spriteH = 1024;
 
       const row = direction; // direction: "N": 0, "E": 1, "S": 2, "W": 3
 
@@ -399,6 +400,13 @@
       if (currentItem === "fire_extinguisher") {
         ctx.drawImage(fireExtinguisherImg, slotX + 4, slotY + 4, slotSize - 8, slotSize - 8);
       }
+
+      ctx.font = "24px 'Pixelify Sans'";
+      ctx.fillStyle = "white";
+      ctx.textAlign = "right"; // align text to the right
+
+      // draw text at top-right corner
+      ctx.fillText("Level: " + Module.getFloor(), canvas.width - 10, 30);
     }
 
     // --- Presence event handlers ---

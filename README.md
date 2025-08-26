@@ -16,3 +16,9 @@ python3 -m http.server 8080
 
 - Flying bird CSS [Douglas @imdoug](https://codepen.io/imdoug/pen/vYZNoYr)
 - Cloud CSS [Paul Firth @kellkellkell](https://codepen.io/kellkellkell/pen/VbzayM)
+
+- Fire extinguisher [Karim-Nessim](https://pixabay.com/sound-effects/fire-extinguishing-212651/)
+- Fire [MaxHammarbäck](https://pixabay.com/sound-effects/fire-sound-efftect-21991/)
+- Fire [SoundReality](https://pixabay.com/sound-effects/fire-sound-334130/)
+
+- Help [Maddog0963 (Freesound)](https://pixabay.com/sound-effects/help-me-mp3-54969/)
