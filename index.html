@@ -200,7 +200,7 @@ for (let row = 0; row < windowRows; row++) {
     startButton.onclick = () => {
       gameState = "playing";
       stopSoundLoop();
-      playSoundLoopWithRandomDelay("/assets/help_me.mp3", 10, 5);
+      playSoundLoopWithRandomDelay("/assets/help_me.mp3", 40, 10);
       startScreen.style.display = "none";
       gameCanvas.style.display = "block";
       //startGame(); // initialize maze, players, ghosts, etc.
@@ -209,7 +209,7 @@ for (let row = 0; row < windowRows; row++) {
     restartButton.onclick = () => {
       gameState = "playing";
       stopSoundLoop();
-      playSoundLoopWithRandomDelay("/assets/help_me.mp3", 10, 5);
+      playSoundLoopWithRandomDelay("/assets/help_me.mp3", 40, 10);
       gameoverScreen.style.display = "none";
       gameCanvas.style.display = "block";
       //startGame(); // reset everything
