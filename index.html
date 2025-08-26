@@ -143,6 +143,7 @@ for (let row = 0; row < windowRows; row++) {
     const startButton = document.getElementById("start-button");
     const restartButton = document.getElementById("restart-button");
     let currentItem = null;
+    let currentItemCode = -1;
     let itemIcon = document.getElementById("item-icon")
     let gameState = "start"
 
@@ -421,6 +422,10 @@ for (let row = 0; row < windowRows; row++) {
             ctx.fillStyle = "#7D0B0B";
             ctx.fillRect(offsetX + x*tile, offsetY + y*tile, tile, tile);
           }
+          if (Module.getCell(x, y) === 'i'){ // illuminated
+            ctx.fillStyle = "#00FF80";
+            ctx.fillRect(offsetX + x*tile, offsetY + y*tile, tile, tile);
+          }
         }
       }
       if (updateEnvironment){
@@ -511,8 +516,14 @@ for (let row = 0; row < windowRows; row++) {
       })
       .on("broadcast", { event: "ghost_moved" }, ({ payload }) => { // update ghosts that are not owned by this client
         const { ghostId, x, y, floor } = payload;
-        console.log("received broadcast (ghost)", payload);
+        //console.log("received broadcast (ghost)", payload);
         ghosts[ghostId] = { x: x, y: y, floor: floor };
+        render(false);
+      })
+      .on("broadcast", { event: "illuminate" }, ({ payload }) => {
+        const { ghostId, x, y, floor } = payload;
+        console.log("illuminate at", x, y);
+        Module.illuminate(x, y);
         render(false);
       })
       // (Optional) keep logs muted; movement updates often show as join/leave diffs internally.
@@ -563,18 +574,18 @@ for (let row = 0; row < windowRows; row++) {
 
         console.log("tried to pick up", x, y, floor);
 
-        let res = Module.tryPickup(x, y, floor);
+        currentItemCode = Module.tryPickup(x, y, floor);
 
-        if (res !== -1) {
+        if (currentItemCode !== -1) {
           // picked locally → broadcast to others
           console.log("picked up")
-          if (res === 0){
+          if (currentItemCode === 0){
             currentItem = "fire_extinguisher";
-          } else if (res === 1){
+          } else if (currentItemCode === 1){
             currentItem = "laser";
-          } else if (res === 2){
+          } else if (currentItemCode === 2){
             currentItem = "energy_cube";
-          } else if (res === 3){
+          } else if (currentItemCode === 3){
             currentItem = "potion";
           }
           channel.send({
@@ -591,10 +602,11 @@ for (let row = 0; row < windowRows; row++) {
           const x = Module.getX();
           const y = Module.getY();
           const floor = Module.getFloor();
-          const res = Module.tryUse(floor);
+          const res = Module.tryUse(currentItemCode, floor);
           console.log(res)
           if (currentItem === "fire_extinguisher"){
             if (res[0]){ // item actually has some use
+              console.log("Used fire extinguisher")
               channel.send({
                 type: "broadcast",
                 event: "fire_extinguished",
@@ -605,12 +617,38 @@ for (let row = 0; row < windowRows; row++) {
             }
           } else if (currentItem === "laser"){
             // TODO illuminate path
+            if (res[0]){
+              console.log("Used laser")
+              channel.send({
+                type: "broadcast",
+                event: "illuminate",
+                payload: { 
+                  messageType: 3, x: res[1][0], y: res[1][1], floor, ghost_id: 0 
+                }
+              });
+            }
           } else if (currentItem === "energy_cube"){
             // TODO kill fire
-          } else if (currentItem === "potion"){
-            // TODO heal
-          }
+            // if (res[0]){
+            //   for ... {
+            //     if (...){
+            //       channel.send({
+            //         type: "broadcast",
+            //         event: "zombie_dead",
+            //         payload: { 
+            //           messageType: 2, x: res[1][0], y: res[1][1], floor, ghost_id: 0 
+            //         }
+            //       });
+            //     }
+            //   }
 
+            // }
+          } else if (currentItem === "potion"){
+            if (res[0]){
+              // player's health incremented already
+            }
+          }
+          currentItemCode = -1;
           currentItem = null;
         }
 

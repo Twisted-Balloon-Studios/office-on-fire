@@ -13,3 +13,7 @@
 - `S` = switch
 - `D` = door
 - `P` = portal
+
+- `h` = hammer
+- `w` = fake wall
+- `i` = illuminated

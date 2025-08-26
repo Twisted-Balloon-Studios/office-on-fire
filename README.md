@@ -18,6 +18,7 @@ python3 -m http.server 8080
 
 - Flying bird CSS [Douglas @imdoug](https://codepen.io/imdoug/pen/vYZNoYr)
 - Cloud CSS [Paul Firth @kellkellkell](https://codepen.io/kellkellkell/pen/VbzayM)
+- Stone Hammer [FacadeGaikan](https://opengameart.org/node/29290)
 
 - Fire extinguisher [Karim-Nessim](https://pixabay.com/sound-effects/fire-extinguishing-212651/)
 - Fire [MaxHammarbäck](https://pixabay.com/sound-effects/fire-sound-efftect-21991/)

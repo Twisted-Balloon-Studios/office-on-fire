@@ -108,6 +108,8 @@ void Maze::apply(const Message& m){
         case MessageType::FIRE_EXTINGUISHED:
             grid[m.x][m.y] = '.'; // empty cell
             break;
+        case MessageType::ILLUMINATE:
+            break; // nothing to do
         default:
             // TODO
             break;
@@ -126,6 +128,8 @@ void Maze::apply(Message&& m){
         case MessageType::FIRE_EXTINGUISHED:
             grid[m.x][m.y] = '.'; // empty cell
             break;
+        case MessageType::ILLUMINATE:
+            break; // nothing to do
         default:
             // TODO
             break;
@@ -216,5 +220,18 @@ void Maze::tick(){
         s.insert({tx, ty});
     }
 
+}
+
+bool Maze::is_obstacle(int x, int y) const{
+    char c = getCell(x, y);
+    return (c == '#' || c == 'w' || c == 'F');
+}
+
+bool Maze::is_valid(int x, int y) const {
+    if (x < 0 || x >= getHeight()) return false;
+    if (y < 0 || y >= getWidth()) return false;
+    char c = getCell(x, y);
+    if (c == '#' || c == 'X') return false;
+    return true;
 }
 

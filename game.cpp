@@ -5,6 +5,8 @@
 #include <ctime>
 #include <set>
 #include <cmath>
+#include <queue>
+#include <map>
 #include "maze.h"
 #include "ghost.h"
 using namespace emscripten;
@@ -134,18 +136,83 @@ int tryPickup(int px, int py, int f){
     return res;
 }
 
-std::pair<bool, std::pair<int,int> > tryUse(int f){
-    int dx[] = {1, -1, 0, 0};
-    int dy[] = {0, 0, 1, -1};
-    int dirx = player.x + dx[player.direction];
-    int diry = player.y + dy[player.direction];
-    if (maze.getCell(dirx, diry) == 'F'){
-        maze.setCell(dirx, diry, '.');
-        return {true, {dirx, diry}}; // extinguished the fire
+std::pair<bool, std::pair<int,int> > tryUse(int item_code, int f){
+    if (item_code == -1) return {false, {-1, -1}}; // no item, use for what
+    if (item_code == 0){ // fire extinguisher
+        int dx[] = {1, -1, 0, 0};
+        int dy[] = {0, 0, 1, -1};
+        int dirx = player.x + dx[player.direction];
+        int diry = player.y + dy[player.direction];
+        if (maze.getCell(dirx, diry) == 'F'){
+            maze.setCell(dirx, diry, '.');
+            return {true, {dirx, diry}}; // extinguished the fire
+        }
+        return {false, {-1, -1}};
+    } else if (item_code == 1){ // laser
+        // illuminate(player.x, player.y);
+        return {true, {player.x, player.y}};
+    } else if (item_code == 2){
+        return {true, {player.x, player.y}};
+    } else if (item_code == 3){
+        player.takeDamage(-50);
+        return {true, {-1, -1}};
     }
     return {false, {-1, -1}};
 }
 int ghostGetDirection(){ return ghost.getDirection(); }
+
+void illuminate(int x, int y){
+    typedef std::pair<int,int> pi;
+    typedef std::pair<pi, pi> pii;
+    int hh = maze.getHeight();
+    int ww = maze.getWidth();
+    std::map<pi, pi> dist;
+    std::map<pi, pi> back_pointer;
+    dist[{player.x, player.y}] = {0, 0};
+    std::priority_queue<pii, std::vector<pii>, std::greater<pii> > pq;
+    pq.push({{0, 0}, {player.x, player.y}});
+    int dx[] = {1, -1, 0, 0};
+    int dy[] = {0, 0, 1, -1};
+    while (!pq.empty()){
+        pii cur = pq.top();
+        pq.pop();
+        if (cur.second == std::make_pair(x, y)) break; // early exit
+        if (dist[cur.second] < cur.first) continue; // outdated
+        int curx = cur.second.first;
+        int cury = cur.second.second;
+        for (int i = 0; i < 4; i++){
+            int newx = curx + dx[i];
+            int newy = cury + dy[i];
+            if (!maze.is_valid(newx, newy)) continue; // not a valid cell for inspection
+            bool visited = (dist.find({newx, newy}) != dist.end());
+            if (visited){
+                pi prev_dist = dist[{newx, newy}];
+                int blockage = maze.getCell(x, y) ? 1 : 0;
+                pi new_dist = {1 + dist[cur.second].first, blockage + dist[cur.second].second};
+                if (prev_dist > new_dist){
+                    dist[{newx, newy}] = new_dist;
+                    pq.push({dist[{newx, newy}], {newx, newy}});
+                    back_pointer[{newx, newy}] = {curx, cury};
+                }
+            } else {
+                int blockage = maze.getCell(x, y) ? 1 : 0;
+                dist[{newx, newy}] = {1 + dist[cur.second].first, blockage + dist[cur.second].second};
+                pq.push({dist[{newx, newy}], {newx, newy}});
+                back_pointer[{newx, newy}] = {curx, cury};
+            }
+        }
+    }
+
+    // backtrack
+    pi cur = {x, y};
+    while (cur != std::make_pair(player.x, player.y)){
+        if (maze.getCell(cur.first, cur.second) == '.'){
+            maze.setCell(cur.first, cur.second, 'i'); // illuminate that cell
+        }
+
+        cur = back_pointer[cur];
+    }
+}
 
 EMSCRIPTEN_BINDINGS(game_module) {
     function("movePlayer", &movePlayer);
@@ -161,6 +228,7 @@ EMSCRIPTEN_BINDINGS(game_module) {
     function("getWidth", &getWidth);
     function("generateMaze", &generateMaze);
     function("tick", &tick);
+    function("illuminate", &illuminate);
 
     function("addMessage", &addMessage);
     function("cleanUp", &cleanUp);
