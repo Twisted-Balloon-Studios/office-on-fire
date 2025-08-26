@@ -65,6 +65,7 @@ void movePlayer(int dx, int dy) {
         maze.generate(20, 20, player.floor); // new floor
         player.x = 1;
         player.y = 1;
+        if (!ghost.isActive()) ghost.toggleActive(); // turn ghost back on
     }
 }
 
@@ -214,6 +215,9 @@ void illuminate(int x, int y){
     }
 }
 
+bool ghost_is_active(){ return ghost.isActive(); }
+void ghost_toggle_active() { ghost.toggleActive(); }
+
 EMSCRIPTEN_BINDINGS(game_module) {
     function("movePlayer", &movePlayer);
     function("getX", &getX);
@@ -234,6 +238,9 @@ EMSCRIPTEN_BINDINGS(game_module) {
     function("cleanUp", &cleanUp);
     function("tryPickup", &tryPickup);
     function("tryUse", &tryUse);
+
+    function("ghost_is_active", &ghost_is_active);
+    function("ghost_toggle_active", &ghost_toggle_active);
 
     function("moveGhost", &moveGhost);
     function("ghostGetDirection", &ghostGetDirection);

@@ -9,6 +9,7 @@ public:
     int getY() const;
     int getFloor() const;
     bool isActive() const;
+    void toggleActive();
     int getDirection() const;
 
 private:

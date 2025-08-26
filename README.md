@@ -15,6 +15,8 @@ python3 -m http.server 8080
 - Office workers [Unknown](https://opengameart.org/content/office-worker-sprites)
 - Potion [ArlanTR](https://opengameart.org/node/109980)
 - Laser [\[deleted\]](https://www.reddit.com/r/PixelArt/comments/v3hnwd/laser_pointer_by_me/)
+- Floor tiles [Cough-E](https://opengameart.org/content/32x32-tile-pixel-art-tilesheet)
+- Stairs [Oiboo](https://opengameart.org/content/stairs-2)
 
 - Flying bird CSS [Douglas @imdoug](https://codepen.io/imdoug/pen/vYZNoYr)
 - Cloud CSS [Paul Firth @kellkellkell](https://codepen.io/kellkellkell/pen/VbzayM)

@@ -28,3 +28,4 @@ int Ghost::getY() const { return y; }
 int Ghost::getFloor() const { return floor; }
 bool Ghost::isActive() const { return active; }
 int Ghost::getDirection() const { return direction; }
+void Ghost::toggleActive() { active = !active; }

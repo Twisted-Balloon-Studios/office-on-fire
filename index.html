@@ -137,6 +137,22 @@ for (let row = 0; row < windowRows; row++) {
     const otherImg = new Image();
     otherImg.src = "/assets/other.png";
 
+    // exit
+    const exit0Img = new Image();
+    exit0Img.src = "/assets/exit-0.png";
+    const exit1Img = new Image();
+    exit1Img.src = "/assets/exit-1.png";
+    const exit2Img = new Image();
+    exit2Img.src = "/assets/exit-2.png";
+    const exit3Img = new Image();
+    exit3Img.src = "/assets/exit-3.png";
+
+    // floor
+    const woodTileImg = new Image();
+    woodTileImg.src = "/assets/wood_tile_1024.png";
+    const stoneTileImg = new Image();
+    stoneTileImg.src = "/assets/stone_tile_1024.png";
+
     const startScreen = document.getElementById("start-screen");
     const gameCanvas = document.getElementById("game");
     const gameoverScreen = document.getElementById("gameover-screen");
@@ -263,7 +279,7 @@ for (let row = 0; row < windowRows; row++) {
       drawSprite(fireImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
     }
 
-    function drawBrickWall(x, y, ox, oy) {
+    function drawFloor(x, y, ox, oy, sprite_id) {
       const spriteW = 1024, spriteH = 1024;
 
       // animation frame
@@ -278,8 +294,21 @@ for (let row = 0; row < windowRows; row++) {
       // center the bigger fire on the tile
       const dx = ox + x * tile - (dw - tile)/2;
       const dy = oy + y * tile - (dh - tile)/2;
-
-      drawSprite(brickImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+      if (sprite_id === 0){
+        drawSprite(stoneTileImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+      } else if (sprite_id === 1){
+        drawSprite(woodTileImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+      } else if (sprite_id === 2){
+        drawSprite(brickImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+      } else if (sprite_id === 3){
+        drawSprite(exit0Img, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+      } else if (sprite_id === 4){
+        drawSprite(exit1Img, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+      } else if (sprite_id === 5){
+        drawSprite(exit2Img, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+      } else if (sprite_id === 6){
+        drawSprite(exit3Img, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+      }
     }
 
     function drawItem(item_id, x, y, ox, oy) {
@@ -393,18 +422,39 @@ for (let row = 0; row < windowRows; row++) {
       let mazeHeight = Module.getHeight();
       let mazeWidth = Module.getWidth();
 
+      // basic render
+      for (let x = 0; x < mazeHeight; x++) {
+        for (let y = 0; y < mazeWidth; y++) {
+          if (Module.getCell(x, y) === 'X'){ continue; }
+          if (Module.getCell(x, y) == '#'){ // boundary obstacles
+            drawFloor(x, y, offsetX, offsetY, 2);
+          } else if (Module.getCell(x, y) == 'E'){ // exit
+            if (Module.getCell(x + 1, y) === 'E' && Module.getCell(x, y + 1) === 'E'){
+              drawFloor(x, y, offsetX, offsetY, 3);
+            } else if (Module.getCell(x + 1, y) === 'E'){
+              drawFloor(x, y, offsetX, offsetY, 5);
+            } else if (Module.getCell(x, y + 1) === 'E'){
+              drawFloor(x, y, offsetX, offsetY, 4);
+            } else {
+              drawFloor(x, y, offsetX, offsetY, 6);
+            }
+            //ctx.fillStyle = "green";
+            //ctx.fillRect(offsetX + x*tile, offsetY + y*tile, tile, tile);
+          } else {
+            if ((x + y)%2 === 0){
+              drawFloor(x, y, offsetX, offsetY, (x + y)%2);
+            } else {
+              drawFloor(x, y, offsetX, offsetY, (x + y)%2);
+            }
+          }
+        }
+      }
+
       // draw maze
       for (let x = 0; x < mazeHeight; x++) {
         for (let y = 0; y < mazeWidth; y++) {
           if (Module.getCell(x, y) === 'F') { // fire
             drawFireWall(x, y, offsetX, offsetY, frameCount);
-          }
-          if (Module.getCell(x, y) == '#'){ // boundary obstacles
-            drawBrickWall(x, y, offsetX, offsetY);
-          }
-          if (Module.getCell(x, y) === 'E') { // exit
-            ctx.fillStyle = "green";
-            ctx.fillRect(offsetX + x*tile, offsetY + y*tile, tile, tile);
           }
           if (Module.getCell(x, y) === 'I') { // fire extinguisher
             drawItem(0, x, y, offsetX, offsetY);
@@ -436,6 +486,8 @@ for (let row = 0; row < windowRows; row++) {
       for (const [key, g] of Object.entries(ghosts)) {
         if (ghosts[key].floor !== Module.getFloor()){
           // don't draw, not on the same floor
+        } else if (!ghosts[key].active){
+          // don't draw, ghost not active
         } else {
           drawGhost(g.x, g.y, offsetX, offsetY, Module.ghostGetDirection(), updateEnvironment)
         }
@@ -517,13 +569,18 @@ for (let row = 0; row < windowRows; row++) {
       .on("broadcast", { event: "ghost_moved" }, ({ payload }) => { // update ghosts that are not owned by this client
         const { ghostId, x, y, floor } = payload;
         //console.log("received broadcast (ghost)", payload);
-        ghosts[ghostId] = { x: x, y: y, floor: floor };
+        ghosts[ghostId] = { x: x, y: y, floor: floor, active: true }; // sender only sends if ghost active
         render(false);
       })
       .on("broadcast", { event: "illuminate" }, ({ payload }) => {
-        const { ghostId, x, y, floor } = payload;
+        const { ghost_id, x, y, floor } = payload;
         console.log("illuminate at", x, y);
         Module.illuminate(x, y);
+        render(false);
+      })
+      .on("broadcast", { event: "ghost_eliminated" }, ({ payload }) => { // update ghosts that are not owned by this client
+        const { ghost_id, x, y, floor } = payload;
+        delete ghosts[ghost_id]; // delete the ghost that is eliminated
         render(false);
       })
       // (Optional) keep logs muted; movement updates often show as join/leave diffs internally.
@@ -614,6 +671,7 @@ for (let row = 0; row < windowRows; row++) {
                   messageType: 2, x: res[1][0], y: res[1][1], floor, ghost_id: 0 
                 }
               });
+              render(false);
             }
           } else if (currentItem === "laser"){
             // TODO illuminate path
@@ -626,23 +684,43 @@ for (let row = 0; row < windowRows; row++) {
                   messageType: 3, x: res[1][0], y: res[1][1], floor, ghost_id: 0 
                 }
               });
+              render(false);
             }
           } else if (currentItem === "energy_cube"){
-            // TODO kill fire
-            // if (res[0]){
-            //   for ... {
-            //     if (...){
-            //       channel.send({
-            //         type: "broadcast",
-            //         event: "zombie_dead",
-            //         payload: { 
-            //           messageType: 2, x: res[1][0], y: res[1][1], floor, ghost_id: 0 
-            //         }
-            //       });
-            //     }
-            //   }
-
-            // }
+            if (res[0]){
+              // check all ghosts
+              let edit_own_ghost = false;
+              for (const [key, g] of Object.entries(ghosts)) {
+                if (ghosts[key].floor !== Module.getFloor()){
+                  // don't care, not on the same floor
+                } else {
+                  if (Math.abs(g.x - res[1][0]) + Math.abs(g.y - res[1][1]) <= 5){ // manhattan distance of 2
+                    console.log("sending broadcast message - ghost eliminated");
+                    channel.send({
+                      type: "broadcast",
+                      event: "ghost_eliminated",
+                      payload: { 
+                        messageType: 1, x: res[1][0], y: res[1][1], floor, ghost_id: key
+                      }
+                    });
+                    if (key === playerKey && Module.ghost_is_active()){
+                      console.log("is own ghost")
+                      edit_own_ghost = true;
+                      Module.ghost_toggle_active(); // turn active off
+                    }
+                  }
+                }
+              }
+              if (edit_own_ghost){
+                ghosts[playerKey] = {
+                  x: 0, // doesn't matter
+                  y: 0, // doesn't matter
+                  floor: Module.getFloor(),
+                  active: Module.ghost_is_active() // presumably false
+                };
+              }
+              render(false);
+            }
           } else if (currentItem === "potion"){
             if (res[0]){
               // player's health incremented already
@@ -686,25 +764,30 @@ for (let row = 0; row < windowRows; row++) {
             playerCoords.push_back([p.x, p.y]);
           }
         }
+        
+        // only execute this logic if ghost is active
+        if (Module.ghost_is_active()){
+          const newGhostPos = Module.moveGhost(playerCoords);
+          //console.log("newGhostPos", newGhostPos);
+          channel.send({
+            type: "broadcast",
+            event: "ghost_moved",
+            payload: { ghostId: playerKey, x: newGhostPos[0], y: newGhostPos[1], floor: Module.getFloor() }
+          });
+          // update local ghosts cache
+          ghosts[playerKey] = {
+            x: newGhostPos[0],
+            y: newGhostPos[1],
+            floor: Module.getFloor(),
+            active: Module.ghost_is_active()
+          };
 
-        const newGhostPos = Module.moveGhost(playerCoords);
-        //console.log("newGhostPos", newGhostPos);
-        channel.send({
-          type: "broadcast",
-          event: "ghost_moved",
-          payload: { ghostId: playerKey, x: newGhostPos[0], y: newGhostPos[1], floor: Module.getFloor() }
-        });
-        // update local ghosts cache
-        ghosts[playerKey] = {
-          x: newGhostPos[0],
-          y: newGhostPos[1],
-          floor: Module.getFloor(),
-        };
-
-        if (playerKey in players && newGhostPos[0] === players[playerKey].x && newGhostPos[1] === players[playerKey].y){
-          Module.takeDamage(30);
-          players[playerKey].health = Module.getHealth(); // instant update since local
+          if (playerKey in players && newGhostPos[0] === players[playerKey].x && newGhostPos[1] === players[playerKey].y){
+            Module.takeDamage(30);
+            players[playerKey].health = Module.getHealth(); // instant update since local
+          }
         }
+
     }, 1000);
 
     // Render once (in case presence sync hasn't arrived yet)
