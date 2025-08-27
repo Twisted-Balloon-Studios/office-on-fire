@@ -101,6 +101,36 @@ for (let row = 0; row < windowRows; row++) {
         tower.appendChild(win);
     }
 }
+
+function igniteRandomWindow() {
+    const windows = document.querySelectorAll('.window');
+    const fireCount = Math.floor(Math.random() * 10) + 1;
+
+    for (let i = 0; i < fireCount; i++) {
+        const win = windows[Math.floor(Math.random() * windows.length)];
+
+        if (win.querySelector('.fire')) continue; // skip if already burning
+
+        const fire = document.createElement('div');
+        fire.className = 'fire';
+
+        // Optional: match fire size to window
+        const width = parseFloat(win.style.width);
+        const height = parseFloat(win.style.height);
+        fire.style.width = `${width * 0.6}px`;
+        fire.style.height = `${height * 0.8}px`;
+
+        win.appendChild(fire);
+
+        // Remove the fire after a short time
+        const duration = Math.random() * 2000 + 2000;
+        setTimeout(() => {
+            fire.remove();
+        }, duration);
+    }
+}
+
+setInterval(igniteRandomWindow, 3000);
 </script>
 
   <script type="module">
