@@ -1,4 +1,6 @@
 # Legend
+The first line contains 4 integers (`player.x`, `player.y`, `ghost.x`, `ghost.y`) and a double (`p`).
+
 - `#` = brick wall
 - `.` = empty tile
 - `I` = fire extinguisher

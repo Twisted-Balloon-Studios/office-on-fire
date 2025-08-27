@@ -1,5 +1,6 @@
 #include <fstream>
 #include <sstream>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -7,25 +8,29 @@
 #include <chrono>
 #include <algorithm>
 #include "maze.h"
+#include "ghost.h"
+#include "player.h"
 
-Maze::Maze(int h, int w, int f, int sd): height(h), width(w), seed(sd), flr(f), p((double)0.5){
+Maze::Maze(int h, int w, int f, int sd, Player& pl, Ghost& gh): height(h), width(w), seed(sd), flr(f), p((double)0.5){
     item_codes = {'I', 'L', 'N', 'H'};
-    generate(h, w, f);
+    generate(h, w, f, pl, gh);
 }
 
-void Maze::generate(int h, int w, int f){
+void Maze::generate(int h, int w, int f, Player& pl, Ghost& gh){
+    s.clear();
+    height = h;
+    width = w;
+    flr = f;
+    pl.floor = f;
+    gh.set_floor(f);
     if (f <= 2){
-        s.clear();
-        height = h;
-        width = w;
-        flr = f;
         srand(seed*f);
-        from_file("floors/floor" + std::to_string(f) + ".txt");
+        from_file("floors/floor" + std::to_string(f) + ".txt", pl, gh);
     } else {
-        s.clear();
-        height = h;
-        width = w;
-        flr = f;
+        pl.x = pl.y = 1;
+        gh.set_x(3);
+        gh.set_y(3);
+        if (!gh.isActive()) gh.toggleActive();
 
         srand(seed*f);
 
@@ -155,13 +160,27 @@ void Maze::cleanUp(){
     }
 }
 
-void Maze::from_file(const std::string& filename){
+void Maze::from_file(const std::string& filename, Player& pl, Ghost& gh){
     std::ifstream infile(filename);
     if (!infile.is_open()) throw std::runtime_error("Could not open maze file: " + filename);
 
-    std::vector<std::vector<char>> newGrid;
     std::string line;
+    int px, py, gx, gy;
+    double pp;
 
+    std::getline(infile, line);
+    std::istringstream iss(line);
+    iss >> px >> py >> gx >> gy >> pp;
+    pl.x = px;
+    pl.y = py;
+    gh.set_x(gx);
+    gh.set_y(gy);
+    set_p(pp);
+
+    if (!gh.isActive()) gh.toggleActive(); // turn ghost back on
+
+
+    std::vector<std::vector<char>> newGrid;
     while (std::getline(infile, line)) {
         if (line.empty()) continue; // skip empty lines
 
@@ -188,6 +207,8 @@ void Maze::from_file(const std::string& filename){
 
     grid = std::move(newGrid);
 }
+
+void Maze::set_p(double _p){ p = _p; }
 
 void Maze::tick(){
 

@@ -29,3 +29,6 @@ int Ghost::getFloor() const { return floor; }
 bool Ghost::isActive() const { return active; }
 int Ghost::getDirection() const { return direction; }
 void Ghost::toggleActive() { active = !active; }
+void Ghost::set_x(int _x) { x = _x; }
+void Ghost::set_y(int _y) { y = _y; }
+void Ghost::set_floor(int _floor) { floor = _floor; }

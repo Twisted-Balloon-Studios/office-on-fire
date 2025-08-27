@@ -2,6 +2,8 @@
 #include <vector>
 #include <set>
 #include <tuple>
+#include "ghost.h"
+#include "player.h"
 
 enum class MessageType {
     ITEM_PICKED_UP,
@@ -18,9 +20,9 @@ struct Message {
 
 class Maze {
 public:
-    Maze(int h, int w, int f, int sd);
+    Maze(int h, int w, int f, int sd, Player& pl, Ghost& gh);
 
-    void generate(int h, int w, int f);
+    void generate(int h, int w, int f, Player& pl, Ghost& gh);
 
     void tick();
 
@@ -41,7 +43,9 @@ public:
 
     void cleanUp();
 
-    void from_file(const std::string& filename);
+    void from_file(const std::string& filename, Player& pl, Ghost& gh);
+
+    void set_p(double _p);
 
     struct Compare {
         bool operator()(const Message& a, const Message& b) const {

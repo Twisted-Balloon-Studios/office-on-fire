@@ -9,42 +9,12 @@
 #include <map>
 #include "maze.h"
 #include "ghost.h"
+#include "player.h"
 using namespace emscripten;
 
-struct Player {
-    int x, y, floor, direction;
-    int health;
-    bool hasItem;
-    Player() : x(5), y(5), floor(0), health(100), direction(0), hasItem(false) {}
-    
-    void move(int dx, int dy) {
-        x += dx;
-        y += dy;
-    }
-
-    void downFloor() {
-        floor++;
-        x = 0; y = 0; // reset position when changing floors
-    }
-
-    void takeDamage(int v){ // take v hit damage, can be negative
-        health -= v;
-        if (health < 0) health = 0;
-        if (health > 100) health = 100;
-    }
-
-    void getItem(){
-        hasItem = true;
-    }
-
-    void useItem(){
-        hasItem = false;
-    }
-};
-
-static Player player;
-Maze maze(20, 20, 0, 12345);
+Player player;
 Ghost ghost(12, 12, 0, true, 0);
+Maze maze(20, 20, 0, 12345, player, ghost);
 
 int calcDirection(std::pair<int,int> cur, std::pair<int,int> nxt){
     if (nxt.second > cur.second) return 2;
@@ -61,11 +31,11 @@ bool movePlayer(int dx, int dy){ // returns true if level incremented
         player.y = newY; 
     }
     if (maze.getCell(player.x, player.y) == 'E') { // 2 = exit
-        player.floor++;
-        maze.generate(20, 20, player.floor); // new floor
-        player.x = 1;
-        player.y = 1;
-        if (!ghost.isActive()) ghost.toggleActive(); // turn ghost back on
+        maze.generate(20, 20, player.floor + 1, player, ghost); // new floor
+        // player.x = 1;
+        // player.y = 1;
+        // ghost.set_floor(ghost.getFloor() + 1);
+        // player.floor++;
         return true;
     }
     return false;
@@ -125,7 +95,7 @@ std::string getCell(int x, int y){
 }
 int getHeight(){ return maze.getHeight(); }
 int getWidth(){ return maze.getWidth(); }
-void generateMaze(int height, int width, int flr) { maze.generate(height, width, flr); }
+void generateMaze(int height, int width, int flr) { maze.generate(height, width, flr, player, ghost); }
 void addMessage(int messageType, int x, int y, int floor, int ghost_id){
     MessageType mt = static_cast<MessageType>(messageType);
     maze.insert({mt, x, y, floor, ghost_id});
