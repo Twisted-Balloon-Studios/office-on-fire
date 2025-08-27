@@ -17,6 +17,12 @@ python3 -m http.server 8080
 - Laser [\[deleted\]](https://www.reddit.com/r/PixelArt/comments/v3hnwd/laser_pointer_by_me/)
 - Floor tiles [Cough-E](https://opengameart.org/content/32x32-tile-pixel-art-tilesheet)
 - Stairs [Oiboo](https://opengameart.org/content/stairs-2)
+- Bonus [Universfield](https://pixabay.com/sound-effects/game-bonus-144751/)
+- Start [plasterbrain](https://pixabay.com/sound-effects/game-start-6104/)
+- Explosion [SoundReality](https://pixabay.com/sound-effects/game-explosion-321700/)
+- Level complete [freesound_CrunchpixStudio](https://pixabay.com/sound-effects/level-complete-394515/)
+- Automation [Eric Matyas](https://soundimage.org/wp-content/uploads/2016/11/Automation.mp3)
+- Blood splatter [decx](https://jsfiddle.net/decx/Ca9Y7/)
 
 - Flying bird CSS [Douglas @imdoug](https://codepen.io/imdoug/pen/vYZNoYr)
 - Cloud CSS [Paul Firth @kellkellkell](https://codepen.io/kellkellkell/pen/VbzayM)

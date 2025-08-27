@@ -16,7 +16,11 @@
   </div>
 
   <div id="building">
-    <canvas id="game" width="600" height="600" style="display:none;"></canvas>
+    <div class="canvas-wrapper" style="position: relative; width: 600px; height: 600px;">
+      <canvas id="game" width="600" height="600" style="display:none;position:absolute;top: 0; left: 0;z-index:0;"></canvas>
+      <canvas id="blood" width="600" height="600" style="position:absolute;top: 0; left: 0;z-index:1;"></canvas>
+      <canvas id="shadow" width="600" height="600" style="position:absolute;top: 0; left: 0;z-index:2;"></canvas>
+    </div>
     <div id="tower"></div>
   </div>
 
@@ -197,6 +201,8 @@ for (let row = 0; row < windowRows; row++) {
     let itemIcon = document.getElementById("item-icon")
     let gameState = "start"
 
+    var items = []; // blood splatter
+
     startButton.onclick = () => {
       gameState = "playing";
       stopSoundLoop();
@@ -258,6 +264,68 @@ for (let row = 0; row < windowRows; row++) {
     // --- Canvas render ---
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
+
+    /* blood splatter section begin */
+
+    const blood_canvas = document.getElementById("blood");
+    const blood_ctx = blood_canvas.getContext("2d");
+    const shadow_canvas = document.getElementById("shadow");
+    const shadow_ctx = shadow_canvas.getContext("2d");
+    var redtone = 'rgb(' + (130 + (Math.random() * 105 | 0)) + ',0,0)';
+    shadow_ctx.fillStyle = blood_ctx.fillStyle = redtone;
+    var focused = false;
+    var clicked = false;
+
+    function splat(x, y, arr, scatter) {
+      for (var i = 0; i < 30; i++) {
+        var s = Math.random() * Math.PI;
+        var dirx = (((Math.random() < .5) ? 3 : -3) * (Math.random() * 3)) * scatter;
+        var diry = (((Math.random() < .5) ? 3 : -3) * (Math.random() * 3)) * scatter;
+        arr.push({
+          x: x,
+          y: y,
+          dx: dirx, 
+          dy: diry,
+          size: s
+        });
+      }
+    }
+
+    function circle(x, y, s, c) {
+      c.beginPath();
+      c.arc(x, y, s * 5, 0, 2 * Math.PI, false);
+      c.fill();
+      c.closePath();
+    }
+
+    function drawsplat(arr, gravity, consistency) {
+      var i = arr.length
+      while (i--) {
+        var t = arr[i];
+        var x = t.x, y = t.y, s = t.size;
+        circle(x, y, s, blood_ctx); // temporary animation
+
+        t.dy -= gravity; 
+        t.x -= t.dx;
+        t.y -= t.dy;
+        t.size -= 0.05;
+
+        if (arr[i].size < 0.3 || Math.random() < consistency) {
+            circle(x, y, s, shadow_ctx); // persistent animation
+            arr.splice(i, 1);
+        }
+      }
+      blood_ctx.drawImage(shadow_canvas, 0, 0);  
+    }
+
+    function drawloop() {
+      if (focused) { requestAnimationFrame(drawloop); }
+      blood_ctx.clearRect(0, 0, blood_canvas.width, blood_canvas.height);
+      drawsplat(items, 0.2, 0.04);
+    }
+
+    /* blood splatter section end */
+
     const tile = 30, ox = 60, oy = 60;
 
     function worldToScreen(x, y) {
@@ -825,6 +893,26 @@ for (let row = 0; row < windowRows; row++) {
 
           if (playerKey in players && newGhostPos[0] === players[playerKey].x && newGhostPos[1] === players[playerKey].y){
             Module.takeDamage(30);
+            for (let ii = 0; ii < 5; ii++){
+              let rng = 3*Math.random();
+              if (rng < 1){
+                splat(5, Math.random()*600, items, 0.2);
+              } else if (rng < 2){
+                splat(Math.random()*600, 5, items, 0.2);
+              } else {
+                splat(595, Math.random()*600, items, 0.2);
+              }
+            }
+            if (!focused){
+              focused = true;
+              drawloop();
+            } else {
+              clicked = true;
+              setTimeout(function (){ clicked = false; }, 100);
+            }
+            console.log("added splatter");
+
+            console.log(items);
             players[playerKey].health = Module.getHealth(); // instant update since local
           }
         }
