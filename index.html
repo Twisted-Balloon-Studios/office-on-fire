@@ -262,8 +262,13 @@ setInterval(igniteRandomWindow, 3000);
       gameoverScreen.style.display = "none";
       gameCanvas.style.display = "block";
       Module.restart();
-      players[playerKey].active = true;
+      players[playerKey] = { x: Module.getX(), y: Module.getY(), floor: Module.getFloor(), health: Module.getHealth(), direction: Module.getDirection(), active: (gameState === "playing") };
       channel.track(players[playerKey]);
+      blood_ctx.clearRect(0, 0, 600, 600);
+      shadow_ctx.clearRect(0, 0, 600, 600);
+      items = [];
+      currentItem = null;
+      currentItemCode = -1;
       //startGame(); // reset everything
     };
 
@@ -998,7 +1003,7 @@ setInterval(igniteRandomWindow, 3000);
     }
 
     // Render once (in case presence sync hasn't arrived yet)
-    players[playerKey] = { x: Module.getX(), y: Module.getY(), floor: Module.getFloor(), health: Module.getHealth(), direction: Module.getDirection(), active: players[playerKey].active };
+    players[playerKey] = { x: Module.getX(), y: Module.getY(), floor: Module.getFloor(), health: Module.getHealth(), direction: Module.getDirection(), active: (gameState === "playing") };
     render(false);
   </script>
 </body>
