@@ -21,8 +21,10 @@ python3 -m http.server 8080
 - Start [plasterbrain](https://pixabay.com/sound-effects/game-start-6104/)
 - Explosion [SoundReality](https://pixabay.com/sound-effects/game-explosion-321700/)
 - Level complete [freesound_CrunchpixStudio](https://pixabay.com/sound-effects/level-complete-394515/)
-- Automation [Eric Matyas](https://soundimage.org/wp-content/uploads/2016/11/Automation.mp3)
+- Dystopian mayhem [Eric Matyas](https://soundimage.org/wp-content/uploads/2015/12/Dystopic-Mayhem.mp3)
 - Blood splatter [decx](https://jsfiddle.net/decx/Ca9Y7/)
+- Hurt [pepsimanfan](https://pixabay.com/sound-effects/young-man-being-hurt-95628/)
+- Game over [Gheorgheleza](https://pixabay.com/sound-effects/desperate-shout-106691/)
 
 - Flying bird CSS [Douglas @imdoug](https://codepen.io/imdoug/pen/vYZNoYr)
 - Cloud CSS [Paul Firth @kellkellkell](https://codepen.io/kellkellkell/pen/VbzayM)

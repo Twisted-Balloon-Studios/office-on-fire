@@ -53,7 +53,7 @@ int calcDirection(std::pair<int,int> cur, std::pair<int,int> nxt){
     return 1;
 }
 
-void movePlayer(int dx, int dy) {
+bool movePlayer(int dx, int dy){ // returns true if level incremented
     int newX = player.x + dx;
     int newY = player.y + dy;
     if (maze.getCell(newX, newY) != '#' && maze.getCell(newX, newY) != 'F'){ // 1 = wall, 10 = fire
@@ -66,7 +66,9 @@ void movePlayer(int dx, int dy) {
         player.x = 1;
         player.y = 1;
         if (!ghost.isActive()) ghost.toggleActive(); // turn ghost back on
+        return true;
     }
+    return false;
 }
 
 inline int manhattan_dist(std::pair<int,int> a, std::pair<int,int> b){

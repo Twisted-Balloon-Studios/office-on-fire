@@ -190,8 +190,16 @@ setInterval(igniteRandomWindow, 3000);
 
     // audio
 
+    const bgMusic = new Audio('/assets/dystopian_mayhem.mp3');
+    bgMusic.loop = true;
+    bgMusic.pause();
     const fireExtinguisherSound = new Audio('/assets/fire_extinguisher.mp3');
-    function playFireExtinguisherSound(){ fireExtinguisherSound.currentTime = 0; fireExtinguisherSound.play(); }
+    const gameOverSound = new Audio('/assets/gameover.m4a');
+    const hurtSound = new Audio('/assets/hurt.m4a');
+    const levelCompleteSound = new Audio('/assets/level-complete.m4a');
+    const explosionSound = new Audio('/assets/explosion.m4a');
+    const getItemSound = new Audio('/assets/get-item.m4a');
+    function playSound(obj){ obj.currentTime = 0; obj.play(); }
 
     let timeoutId = null; // store loop's timer
     let sound = null;
@@ -235,6 +243,7 @@ setInterval(igniteRandomWindow, 3000);
 
     startButton.onclick = () => {
       gameState = "playing";
+      bgMusic.play();
       stopSoundLoop();
       playSoundLoopWithRandomDelay("/assets/help_me.mp3", 40, 10);
       startScreen.style.display = "none";
@@ -244,6 +253,7 @@ setInterval(igniteRandomWindow, 3000);
 
     restartButton.onclick = () => {
       gameState = "playing";
+      bgMusic.play();
       stopSoundLoop();
       playSoundLoopWithRandomDelay("/assets/help_me.mp3", 40, 10);
       gameoverScreen.style.display = "none";
@@ -252,7 +262,9 @@ setInterval(igniteRandomWindow, 3000);
     };
 
     function endGame() {
+      bgMusic.pause();
       stopSoundLoop();
+      playSound(gameOverSound);
       gameState = "gameover";
       //gameCanvas.style.display = "none";
       gameoverScreen.style.display = "block";
@@ -700,7 +712,7 @@ setInterval(igniteRandomWindow, 3000);
       .on("broadcast", { event: "fire_extinguished" }, ({ payload }) => {
         const { messageType, x, y, floor, ghost_id } = payload;
         console.log("received broadcast (fire_extinguished)", payload);
-        playFireExtinguisherSound(); // play for others
+        playSound(fireExtinguisherSound);
         Module.addMessage(messageType, x, y, floor, ghost_id);
         render(false);
       })
@@ -760,7 +772,8 @@ setInterval(igniteRandomWindow, 3000);
         }
         if (!dx && !dy) return;
 
-        Module.movePlayer(dx, dy);
+        let res = Module.movePlayer(dx, dy);
+        if (res){ playSound(levelCompleteSound); }
       } else if (e.key === "c"){ // pick up item
         
         const x = Module.getX();
@@ -773,7 +786,8 @@ setInterval(igniteRandomWindow, 3000);
 
         if (currentItemCode !== -1) {
           // picked locally → broadcast to others
-          console.log("picked up")
+          console.log("picked up");
+          playSound(getItemSound);
           if (currentItemCode === 0){
             currentItem = "fire_extinguisher";
           } else if (currentItemCode === 1){
@@ -802,7 +816,7 @@ setInterval(igniteRandomWindow, 3000);
           if (currentItem === "fire_extinguisher"){
             if (res[0]){ // item actually has some use
               console.log("Used fire extinguisher")
-              playFireExtinguisherSound();
+              playSound(fireExtinguisherSound);
               channel.send({
                 type: "broadcast",
                 event: "fire_extinguished",
@@ -826,6 +840,7 @@ setInterval(igniteRandomWindow, 3000);
               render(false);
             }
           } else if (currentItem === "energy_cube"){
+            playSound(explosionSound);
             if (res[0]){
               // check all ghosts
               let edit_own_ghost = false;
@@ -920,30 +935,37 @@ setInterval(igniteRandomWindow, 3000);
             floor: Module.getFloor(),
             active: Module.ghost_is_active()
           };
+        }
 
-          if (playerKey in players && newGhostPos[0] === players[playerKey].x && newGhostPos[1] === players[playerKey].y){
-            Module.takeDamage(30);
-            for (let ii = 0; ii < 5; ii++){
-              let rng = 3*Math.random();
-              if (rng < 1){
-                splat(5, Math.random()*600, items, 0.2);
-              } else if (rng < 2){
-                splat(Math.random()*600, 5, items, 0.2);
-              } else {
-                splat(595, Math.random()*600, items, 0.2);
+        for (const [key, g] of Object.entries(ghosts)) {
+          if (ghosts[key].floor !== Module.getFloor() || !g.active){
+            // don't care, not on the same floor or not active
+          } else {
+            if (g.x === players[playerKey].x && g.y === players[playerKey].y){
+              Module.takeDamage(30);
+              if (Module.getHealth() > 0){ playSound(hurtSound); }
+              for (let ii = 0; ii < 5; ii++){
+                let rng = 3*Math.random();
+                if (rng < 1){
+                  splat(5, Math.random()*600, items, 0.2);
+                } else if (rng < 2){
+                  splat(Math.random()*600, 5, items, 0.2);
+                } else {
+                  splat(595, Math.random()*600, items, 0.2);
+                }
               }
-            }
-            if (!focused){
-              focused = true;
-              drawloop();
-            } else {
-              clicked = true;
-              setTimeout(function (){ clicked = false; }, 100);
-            }
-            console.log("added splatter");
+              if (!focused){
+                focused = true;
+                drawloop();
+              } else {
+                clicked = true;
+                setTimeout(function (){ clicked = false; }, 100);
+              }
+              console.log("added splatter");
 
-            console.log(items);
-            players[playerKey].health = Module.getHealth(); // instant update since local
+              console.log(items);
+              players[playerKey].health = Module.getHealth(); // instant update since local
+            }
           }
         }
 
