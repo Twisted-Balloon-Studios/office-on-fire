@@ -198,14 +198,19 @@ void Maze::from_file(const std::string& filename, Player& pl, Ghost& gh){
 
     if (newGrid.empty()) throw std::runtime_error("Maze file is empty or invalid: " + filename);
 
-    height = static_cast<int>(newGrid.size());
-    width = static_cast<int>(newGrid[0].size());
+    width = static_cast<int>(newGrid.size());
+    height = static_cast<int>(newGrid[0].size());
 
     for (const auto& row : newGrid) {
-        if (static_cast<int>(row.size()) != width) throw std::runtime_error("Maze file has inconsistent row widths.");
+        if (static_cast<int>(row.size()) != height) throw std::runtime_error("Maze file has inconsistent row widths.");
     }
 
-    grid = std::move(newGrid);
+    std::vector<std::vector<char>> res(height, std::vector<char>(width));
+    for (int i = 0; i < height; i++){
+        for (int j = 0; j < width; j++) res[i][j] = newGrid[j][i];
+    }
+
+    grid = std::move(res);
 }
 
 void Maze::set_p(double _p){ p = _p; }

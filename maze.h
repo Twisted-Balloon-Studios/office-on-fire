@@ -18,6 +18,8 @@ struct Message {
     int ghost_id;
 };
 
+class Ghost;
+
 class Maze {
 public:
     Maze(int h, int w, int f, int sd, Player& pl, Ghost& gh);

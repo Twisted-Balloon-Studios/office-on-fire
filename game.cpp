@@ -63,23 +63,9 @@ std::pair<int,int> moveGhost(const std::vector<std::pair<int,int>>& playerCoords
         }
     }
 
-    // compute tentative next step
-    int nextX = ghostX;
-    int nextY = ghostY;
-
-    if (closestX > ghostX) nextX++;
-    else if (closestX < ghostX) nextX--;
-    if (closestY > ghostY) nextY++;
-    else if (closestY < ghostY) nextY--;
-
-    if (maze.getCell(nextX, nextY) != '#' && maze.getCell(nextX, nextY) != 'F'){ // impending cell is not a wall nor fire
-        ghostX = nextX;
-        ghostY = nextY;
-    }
-
-    ghost.move(ghostX, ghostY); // persist information in ghost
-
-    return {ghostX, ghostY};
+    std::pair<int,int> next_step = ghost.pursue_target(closestX, closestY, maze);
+    ghost.move(next_step.first, next_step.second);
+    return next_step;
 }
 
 int getX(){ return player.x; }

@@ -1,5 +1,8 @@
 #pragma once
-#include <vector>
+#include <set>
+#include "maze.h"
+
+class Maze;
 
 class Ghost {
 public:
@@ -14,8 +17,10 @@ public:
     bool isActive() const;
     void toggleActive();
     int getDirection() const;
+    std::pair<int,int> pursue_target(int tx, int ty, Maze& maze) const;
 
 private:
     int x, y, floor, direction;
     bool active;
+    std::set<std::pair<int, std::pair<int,int> > > memory;
 };
