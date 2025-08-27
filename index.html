@@ -169,7 +169,7 @@ setInterval(igniteRandomWindow, 3000);
     const selfImg = new Image();
     selfImg.src = "/assets/self_1024.png";
     const otherImg = new Image();
-    otherImg.src = "/assets/other.png";
+    otherImg.src = "/assets/other_1024.png";
 
     // exit
     const exit0Img = new Image();
@@ -215,7 +215,7 @@ setInterval(igniteRandomWindow, 3000);
 
     function stopSoundLoop() {
       clearTimeout(timeoutId);
-      if (sound) {
+      if (sound){
         sound.pause();
         sound.currentTime = 0;
       }
@@ -254,7 +254,7 @@ setInterval(igniteRandomWindow, 3000);
     function endGame() {
       stopSoundLoop();
       gameState = "gameover";
-      gameCanvas.style.display = "none";
+      //gameCanvas.style.display = "none";
       gameoverScreen.style.display = "block";
     }
 
@@ -527,8 +527,8 @@ setInterval(igniteRandomWindow, 3000);
     function drawOther(x, y, ox, oy, direction, update, frame) {
       const frameCols = 4; // frames per row
       const frameRows = 4; // directions
-      const spriteW = 16;
-      const spriteH = 16;
+      const spriteW = 1024;
+      const spriteH = 1024;
 
       const row = direction; // direction: "N": 0, "E": 1, "S": 2, "W": 3
 
