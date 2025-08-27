@@ -11,7 +11,7 @@
 #include "ghost.h"
 #include "player.h"
 
-Maze::Maze(int h, int w, int f, int sd, Player& pl, Ghost& gh): height(h), width(w), seed(sd), flr(f), p((double)0.5){
+Maze::Maze(int h, int w, int f, int sd, Player& pl, Ghost& gh): height(h), width(w), seed(sd), flr(f), p((double)0.5), d((double) 1.0){
     item_codes = {'I', 'L', 'N', 'H'};
     generate(h, w, f, pl, gh);
 }
@@ -23,11 +23,13 @@ void Maze::generate(int h, int w, int f, Player& pl, Ghost& gh){
     flr = f;
     pl.floor = f;
     gh.set_floor(f);
-    if (f <= 2){
+    if (f <= 3){
         srand(seed*f);
         from_file("floors/floor" + std::to_string(f) + ".txt", pl, gh);
     } else {
         pl.x = pl.y = 1;
+        d = 1.0;
+        p = 1.0;
         gh.set_x(3);
         gh.set_y(3);
         if (!gh.isActive()) gh.toggleActive();
@@ -166,16 +168,17 @@ void Maze::from_file(const std::string& filename, Player& pl, Ghost& gh){
 
     std::string line;
     int px, py, gx, gy;
-    double pp;
+    double pp, pd;
 
     std::getline(infile, line);
     std::istringstream iss(line);
-    iss >> px >> py >> gx >> gy >> pp;
+    iss >> py >> px >> gy >> gx >> pp >> pd;
     pl.x = px;
     pl.y = py;
     gh.set_x(gx);
     gh.set_y(gy);
     set_p(pp);
+    set_d(pd);
 
     if (!gh.isActive()) gh.toggleActive(); // turn ghost back on
 
@@ -261,3 +264,5 @@ bool Maze::is_valid(int x, int y) const {
     return true;
 }
 
+double Maze::get_d() const { return d; }
+void Maze::set_d(double _d) { d = _d; }

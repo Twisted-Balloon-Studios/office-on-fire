@@ -48,6 +48,8 @@ public:
     void from_file(const std::string& filename, Player& pl, Ghost& gh);
 
     void set_p(double _p);
+    double get_d() const;
+    void set_d(double _d);
 
     struct Compare {
         bool operator()(const Message& a, const Message& b) const {
@@ -57,7 +59,7 @@ public:
 
 private:
     int height, width, seed, flr;
-    double p;
+    double p, d;
     std::vector<std::vector<char>> grid;
     std::set<Message, Compare> messageList;
     std::set<std::pair<int, int> > s;

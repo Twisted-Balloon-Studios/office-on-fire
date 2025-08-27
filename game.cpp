@@ -95,6 +95,13 @@ int tryPickup(int px, int py, int f){
     return res;
 }
 
+void restart(){
+    player.takeDamage(-100);
+    player.floor = 0;
+    ghost.toggleActive();
+    maze.generate(-1, -1, 0, player, ghost);
+}
+
 std::pair<bool, std::pair<int,int> > tryUse(int item_code, int f){
     if (item_code == -1) return {false, {-1, -1}}; // no item, use for what
     if (item_code == 0){ // fire extinguisher
@@ -176,6 +183,8 @@ void illuminate(int x, int y){
 bool ghost_is_active(){ return ghost.isActive(); }
 void ghost_toggle_active() { ghost.toggleActive(); }
 
+double get_d() { return maze.get_d(); }
+
 EMSCRIPTEN_BINDINGS(game_module) {
     function("movePlayer", &movePlayer);
     function("getX", &getX);
@@ -202,6 +211,8 @@ EMSCRIPTEN_BINDINGS(game_module) {
 
     function("moveGhost", &moveGhost);
     function("ghostGetDirection", &ghostGetDirection);
+    function("restart", &restart);
+    function("get_d", &get_d);
     register_vector<std::pair<int,int>>("VectorPairIntInt"); // to bind vector<pair<int, int> >
     value_array<std::pair<int,int>>("PairIntInt") // to bind pair<int,int> 
         .element(&std::pair<int,int>::first)

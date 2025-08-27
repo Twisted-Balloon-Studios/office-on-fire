@@ -248,6 +248,9 @@ setInterval(igniteRandomWindow, 3000);
       playSoundLoopWithRandomDelay("/assets/help_me.mp3", 40, 10);
       startScreen.style.display = "none";
       gameCanvas.style.display = "block";
+      ghostInterval(Module.get_d());
+      players[playerKey].active = true;
+      channel.track(players[playerKey]);
       //startGame(); // initialize maze, players, ghosts, etc.
     };
 
@@ -258,6 +261,9 @@ setInterval(igniteRandomWindow, 3000);
       playSoundLoopWithRandomDelay("/assets/help_me.mp3", 40, 10);
       gameoverScreen.style.display = "none";
       gameCanvas.style.display = "block";
+      Module.restart();
+      players[playerKey].active = true;
+      channel.track(players[playerKey]);
       //startGame(); // reset everything
     };
 
@@ -268,6 +274,8 @@ setInterval(igniteRandomWindow, 3000);
       gameState = "gameover";
       //gameCanvas.style.display = "none";
       gameoverScreen.style.display = "block";
+      players[playerKey].active = false;
+      channel.track(players[playerKey]);
     }
 
     // --- Identity (stable across reloads) ---
@@ -655,6 +663,8 @@ setInterval(igniteRandomWindow, 3000);
         ctx.fillStyle = key === playerKey ? "red" : "blue";
         if (key !== playerKey && players[key].floor !== Module.getFloor()){
           // don't draw, not on the same floor
+        } else if (!players[key].active){
+          // don't draw, not active
         } else if (key === playerKey){ // self
           drawSelf(p.x, p.y, offsetX, offsetY, Module.getDirection(), updateEnvironment)
           const { sx, sy } = worldToScreen(p.x, p.y);
@@ -744,7 +754,8 @@ setInterval(igniteRandomWindow, 3000);
           y: Module.getY(),
           floor: Module.getFloor(),
           health: Module.getHealth(),
-          direction: 0
+          direction: 0,
+          active: false
         });
       });
 
@@ -773,7 +784,11 @@ setInterval(igniteRandomWindow, 3000);
         if (!dx && !dy) return;
 
         let res = Module.movePlayer(dx, dy);
-        if (res){ playSound(levelCompleteSound); }
+        if (res){
+          console.log(Module.get_d());
+          playSound(levelCompleteSound);
+          ghostInterval(Module.get_d());
+        }
       } else if (e.key === "c"){ // pick up item
         
         const x = Module.getX();
@@ -892,7 +907,8 @@ setInterval(igniteRandomWindow, 3000);
         y: Module.getY(),
         floor: Module.getFloor(),
         health: Module.getHealth(),
-        direction: Module.getDirection()
+        direction: Module.getDirection(),
+        active: players[playerKey].active
       };
       render(false);
 
@@ -905,16 +921,26 @@ setInterval(igniteRandomWindow, 3000);
       render(true);
     }, 100);
 
-    setInterval(() => {
+    let intervalId = null;
+    function ghostInterval(p){
+      const intervalDuration = 1000 / p;
+      if (intervalId !== null) {
+        clearInterval(intervalId);
+        console.log('Previous interval cleared');
+      }
+
+      intervalId = setInterval(() => {
+        console.log('Interval triggered');
         if (gameState !== "playing") return;
         Module.tick();
         // get player positions, call moveGhost, broadcast
         const playerCoords = new Module.VectorPairIntInt();
 
         for (const [key, p] of Object.entries(players)) {
-          if (players[key].floor !== Module.getFloor()){
-            // don't draw, not on the same floor
+          if (players[key].floor !== Module.getFloor() || !players[key].active){
+            // don't draw, not on the same floor or not active
           } else {
+            console.log([p.x, p.y]);
             playerCoords.push_back([p.x, p.y]);
           }
         }
@@ -922,7 +948,7 @@ setInterval(igniteRandomWindow, 3000);
         // only execute this logic if ghost is active
         if (Module.ghost_is_active()){
           const newGhostPos = Module.moveGhost(playerCoords);
-          //console.log("newGhostPos", newGhostPos);
+          console.log("newGhostPos", newGhostPos);
           channel.send({
             type: "broadcast",
             event: "ghost_moved",
@@ -968,11 +994,11 @@ setInterval(igniteRandomWindow, 3000);
             }
           }
         }
-
-    }, 1000);
+      }, intervalDuration);
+    }
 
     // Render once (in case presence sync hasn't arrived yet)
-    players[playerKey] = { x: Module.getX(), y: Module.getY(), floor: Module.getFloor(), health: Module.getHealth(), direction: Module.getDirection() };
+    players[playerKey] = { x: Module.getX(), y: Module.getY(), floor: Module.getFloor(), health: Module.getHealth(), direction: Module.getDirection(), active: players[playerKey].active };
     render(false);
   </script>
 </body>
