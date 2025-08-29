@@ -238,6 +238,7 @@ setInterval(igniteRandomWindow, 3000);
 
     const bgMusic = new Audio('/assets/dystopian_mayhem.mp3');
     bgMusic.loop = true;
+    bgMusic.volume = 0.3;
     bgMusic.pause();
     const fireExtinguisherSound = new Audio('/assets/fire_extinguisher.mp3');
     const gameOverSound = new Audio('/assets/gameover.m4a');
@@ -245,7 +246,7 @@ setInterval(igniteRandomWindow, 3000);
     const levelCompleteSound = new Audio('/assets/level-complete.m4a');
     const explosionSound = new Audio('/assets/explosion.m4a');
     const getItemSound = new Audio('/assets/get-item.m4a');
-    function playSound(obj){ obj.volume = 0.3; obj.currentTime = 0; obj.play(); }
+    function playSound(obj){ obj.volume = 0.5; obj.currentTime = 0; obj.play(); }
 
     let timeoutId = null; // store loop's timer
     let sound = null;
@@ -367,7 +368,6 @@ setInterval(igniteRandomWindow, 3000);
         joinRoom(roomNumber); // Your function to create/join the channel
         gameState = "transition";
         transitionStart = performance.now();
-        console.log(transitionStart);
       }
     });
 
@@ -398,26 +398,22 @@ setInterval(igniteRandomWindow, 3000);
       })
       .on("broadcast", { event: "item_picked" }, ({ payload }) => {
         const { messageType, x, y, floor, ghost_id } = payload;
-        console.log("received broadcast (item_picked)", payload);
         Module.addMessage(messageType, x, y, floor, ghost_id);
         render(false);
       })
       .on("broadcast", { event: "fire_extinguished" }, ({ payload }) => {
         const { messageType, x, y, floor, ghost_id } = payload;
-        console.log("received broadcast (fire_extinguished)", payload);
         playSound(fireExtinguisherSound);
         Module.addMessage(messageType, x, y, floor, ghost_id);
         render(false);
       })
       .on("broadcast", { event: "ghost_moved" }, ({ payload }) => { // update ghosts that are not owned by this client
         const { ghostId, x, y, floor } = payload;
-        //console.log("received broadcast (ghost)", payload);
         ghosts[ghostId] = { x: x, y: y, floor: floor, active: true }; // sender only sends if ghost active
         render(false);
       })
       .on("broadcast", { event: "illuminate" }, ({ payload }) => {
         const { ghost_id, x, y, floor } = payload;
-        console.log("illuminate at", x, y);
         Module.illuminate(x, y);
         render(false);
       })
@@ -426,9 +422,6 @@ setInterval(igniteRandomWindow, 3000);
         delete ghosts[ghost_id]; // delete the ghost that is eliminated
         render(false);
       })
-      // (Optional) keep logs muted; movement updates often show as join/leave diffs internally.
-      // .on("presence", { event: "join" }, ({ key }) => console.log("join", key))
-      // .on("presence", { event: "leave" }, ({ key }) => console.log("leave", key))
       .subscribe(async (status) => {
         if (status !== "SUBSCRIBED") return;
         // Initial presence payload (your current position from C++)
@@ -910,9 +903,7 @@ setInterval(igniteRandomWindow, 3000);
         drawInstructions(now, 1);
         return;
       } else if (gameState === "transition"){
-        console.log("HERE")
         const elapsed = now - transitionStart;
-        console.log(elapsed);
         const duration = 1000; // ms
         const t = Math.min(1, elapsed / duration);
         const alpha = 1 - t;
@@ -1135,7 +1126,6 @@ setInterval(igniteRandomWindow, 3000);
 
         let res = Module.movePlayer(dx, dy);
         if (res){
-          console.log(Module.get_d());
           playSound(levelCompleteSound);
           ghostInterval(Module.get_d());
         }
@@ -1145,14 +1135,11 @@ setInterval(igniteRandomWindow, 3000);
         const y = Module.getY();
         const floor = Module.getFloor();
 
-        console.log("tried to pick up", x, y, floor);
-
         let cur = Module.tryPickup(x, y, floor);
 
         if (cur !== -1) {
           currentItemCode = cur;
           // picked locally → broadcast to others
-          console.log("picked up");
           playSound(getItemSound);
           if (currentItemCode === 0){
             currentItem = "fire_extinguisher";
@@ -1175,15 +1162,12 @@ setInterval(igniteRandomWindow, 3000);
         }
       } else if (e.key === "v"){
         if (currentItem){
-          console.log("Used item:", currentItem);
           const x = Module.getX();
           const y = Module.getY();
           const floor = Module.getFloor();
           const res = Module.tryUse(currentItemCode, floor);
-          console.log(res)
           if (currentItem === "fire_extinguisher"){
             if (res[0]){ // item actually has some use
-              console.log("Used fire extinguisher")
               playSound(fireExtinguisherSound);
               channel.send({
                 type: "broadcast",
@@ -1197,7 +1181,6 @@ setInterval(igniteRandomWindow, 3000);
           } else if (currentItem === "laser"){
             // TODO illuminate path
             if (res[0]){
-              console.log("Used laser")
               channel.send({
                 type: "broadcast",
                 event: "illuminate",
@@ -1217,7 +1200,6 @@ setInterval(igniteRandomWindow, 3000);
                   // don't care, not on the same floor
                 } else {
                   if (Math.abs(g.x - res[1][0]) + Math.abs(g.y - res[1][1]) <= 5){ // manhattan distance of 2
-                    console.log("sending broadcast message - ghost eliminated");
                     channel.send({
                       type: "broadcast",
                       event: "ghost_eliminated",
@@ -1226,7 +1208,6 @@ setInterval(igniteRandomWindow, 3000);
                       }
                     });
                     if (key === playerKey && Module.ghost_is_active()){
-                      console.log("is own ghost")
                       edit_own_ghost = true;
                       Module.ghost_toggle_active(); // turn active off
                     }
@@ -1283,11 +1264,9 @@ setInterval(igniteRandomWindow, 3000);
       const intervalDuration = 1000 / p;
       if (intervalId !== null) {
         clearInterval(intervalId);
-        console.log('Previous interval cleared');
       }
 
       intervalId = setInterval(() => {
-        console.log('Interval triggered');
         if (gameState !== "playing") return;
         Module.tick();
         let need_update = false;
@@ -1303,7 +1282,6 @@ setInterval(igniteRandomWindow, 3000);
           if (players[key].floor !== Module.getFloor() || !players[key].active){
             // don't draw, not on the same floor or not active
           } else {
-            console.log([p.x, p.y]);
             playerCoords.push_back([p.x, p.y]);
           }
         }
@@ -1311,7 +1289,6 @@ setInterval(igniteRandomWindow, 3000);
         // only execute this logic if ghost is active
         if (Module.ghost_is_active()){
           const newGhostPos = Module.moveGhost(playerCoords);
-          console.log("newGhostPos", newGhostPos);
           channel.send({
             type: "broadcast",
             event: "ghost_moved",
@@ -1350,9 +1327,6 @@ setInterval(igniteRandomWindow, 3000);
                 clicked = true;
                 setTimeout(function (){ clicked = false; }, 100);
               }
-              console.log("added splatter");
-
-              console.log(items);
               players[playerKey].health = Module.getHealth(); // instant update since local
               need_update = true;
             }
