@@ -9,7 +9,7 @@
 #..#XXXXXXXXXXXXXXXXXXXXXXX#..#XX
 #..#XXXXXXXXXXXXXXXXXXXXX###..###
 #..#XXXXXXXXX#############FFFFFF#
-#..#XXXXXX####............FFFFFF#
+#..#XXXXXX####I...........FFFFFF#
 #..###XXXX#...............FFEEFF#
 #...I######...############FFEEFF#
 #.............#XXXXXXXXXX#FFFFFF#

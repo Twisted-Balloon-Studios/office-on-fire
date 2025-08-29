@@ -56,7 +56,7 @@ The first line contains 4 integers (`player.x`, `player.y`, `ghost.x`, `ghost.y`
 #..#XXXXXXXXXXXXXXXXXXXXXXX#..#XX
 #..#XXXXXXXXXXXXXXXXXXXXX###..###
 #..#XXXXXXXXX#############FFFFFF#
-#..#XXXXXX####............FFFFFF#
+#..#XXXXXX####I...........FFFFFF#
 #..###XXXX#...............FFEEFF#
 #...I######...############FFEEFF#
 #.............#XXXXXXXXXX#FFFFFF#
