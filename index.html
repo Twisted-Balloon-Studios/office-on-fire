@@ -389,72 +389,81 @@ setInterval(igniteRandomWindow, 3000);
 
       ctx.drawImage(
         exitImg,
-        100, // dx
+        50, // dx
         140, // dy
         64,
         64
       );
-      ctx.fillText("The office is on fire...", 180, 150);
-      ctx.fillText("Head to the exit as quickly as possible!", 180, 170);
+      ctx.fillText("The office is on fire...", 130, 150);
+      ctx.fillText("Head to the exit as quickly as possible!", 130, 170);
 
       ctx.drawImage(
         arrowKeysImg,
-        100, // dx
+        50, // dx
         220, // dy
         64,
         64
       );
-      ctx.fillText("Arrow Keys: Move", 180, 230);
-      ctx.fillText("c                   : Pick up item", 180, 250);
-      ctx.fillText("v                   : Use item", 180, 270);
+      ctx.fillText("Arrow Keys: Move", 130, 230);
+      ctx.fillText("c                   : Pick up item", 130, 250);
+      ctx.fillText("v                   : Use item", 130, 270);
 
 
       ctx.drawImage(
         ghostInstImg,
-        100, // dx
+        50, // dx
         300, // dy
         64,
         64
       );
-      ctx.fillText("Avoid the burning corpse!", 180, 340);
+      ctx.fillText("Avoid the burning corpse!", 130, 340);
 
       ctx.font = "10px 'Montserrat', sans-serif";
 
       ctx.drawImage(
         fireExtinguisherImg,
-        100, // dx
+        50, // dx
         380, // dy
         64,
         64
       );
-      ctx.fillText("Puts out fire", 100, 460);
+      ctx.fillText("Puts out fire", 50, 460);
 
       ctx.drawImage(
         laserImg,
-        210, // dx
+        160, // dx
         380, // dy
         64,
         64
       );
-      ctx.fillText("Broadcast location", 190, 460);
+      ctx.fillText("Broadcast location", 145, 460);
 
       ctx.drawImage(
         potionImg,
-        320, // dx
+        270, // dx
         380, // dy
         64,
         64
       );
-      ctx.fillText("Adds HP", 335, 460);
+      ctx.fillText("Adds HP", 280, 460);
 
       ctx.drawImage(
         energyCubeImg,
-        430, // dx
+        380, // dx
         380, // dy
         64,
         64
       );
-      ctx.fillText("Fries corpses", 425, 460);
+      ctx.fillText("Fries corpses", 375, 460);
+
+      ctx.drawImage(
+        bubbleImg,
+        490, // dx
+        380, // dy
+        64,
+        64
+      );
+      ctx.fillText("Protects from fire", 475, 460);
 
       // pulsing "Press any key"
       const pulse = 0.55 + 0.35 * Math.sin(now / 500);
