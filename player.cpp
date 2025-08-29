@@ -1,5 +1,5 @@
 #include "player.h"
-Player::Player(): x(5), y(5), floor(0), health(100), direction(0), hasItem(false){}
+Player::Player(): x(5), y(5), floor(0), health(100), direction(0), hasItem(false), invincibility(0){}
 
 void Player::move(int dx, int dy){
     x += dx;
@@ -24,3 +24,7 @@ void Player::getItem(){
 void Player::useItem(){
     hasItem = false;
 }
+
+int Player::get_invincibility(){ return invincibility; }
+
+void Player::set_invincibility(int _invincibility){ invincibility = _invincibility; }

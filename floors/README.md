@@ -15,6 +15,7 @@ The first line contains 4 integers (`player.x`, `player.y`, `ghost.x`, `ghost.y`
 - `S` = switch
 - `D` = door
 - `P` = portal
+- `B` = bubble
 
 - `h` = hammer
 - `w` = fake wall

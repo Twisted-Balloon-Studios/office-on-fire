@@ -3,6 +3,7 @@ struct Player {
     int x, y, floor, direction;
     int health;
     bool hasItem;
+    int invincibility;
 
     Player();
     
@@ -11,4 +12,6 @@ struct Player {
     void takeDamage(int v);
     void getItem();
     void useItem();
+    int get_invincibility();
+    void set_invincibility(int _invincibility);
 };

@@ -12,7 +12,7 @@
 #include "player.h"
 
 Maze::Maze(int h, int w, int f, int sd, Player& pl, Ghost& gh): height(h), width(w), seed(sd), flr(f), p((double)0.5), d((double) 1.0){
-    item_codes = {'I', 'L', 'N', 'H'};
+    item_codes = {'I', 'L', 'N', 'H', 'B'};
     generate(h, w, f, pl, gh);
 }
 

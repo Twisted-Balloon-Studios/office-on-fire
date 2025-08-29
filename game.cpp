@@ -26,7 +26,7 @@ int calcDirection(std::pair<int,int> cur, std::pair<int,int> nxt){
 bool movePlayer(int dx, int dy){ // returns true if level incremented
     int newX = player.x + dx;
     int newY = player.y + dy;
-    if (maze.getCell(newX, newY) != '#' && maze.getCell(newX, newY) != 'F'){ // 1 = wall, 10 = fire
+    if (maze.getCell(newX, newY) != '#' && ((player.invincibility > 0) || (maze.getCell(newX, newY) != 'F'))){ // 1 = wall, 10 = fire
         player.x = newX;
         player.y = newY; 
     }
@@ -87,7 +87,12 @@ void addMessage(int messageType, int x, int y, int floor, int ghost_id){
     maze.insert({mt, x, y, floor, ghost_id});
 }
 void cleanUp(){ maze.cleanUp(); }
-void tick(){ maze.tick(); }
+void tick(){ 
+    maze.tick();
+    if (player.invincibility > 0){
+        player.invincibility -= 1;
+    }
+}
 int tryPickup(int px, int py, int f){ 
     // return -1 if nothing to pick up, else return item ID
     int res = maze.tryPickup(px, py, f);
@@ -121,6 +126,9 @@ std::pair<bool, std::pair<int,int> > tryUse(int item_code, int f){
         return {true, {player.x, player.y}};
     } else if (item_code == 3){
         player.takeDamage(-50);
+        return {true, {-1, -1}};
+    } else if (item_code == 4){
+        player.set_invincibility(10);
         return {true, {-1, -1}};
     }
     return {false, {-1, -1}};
@@ -185,6 +193,8 @@ void ghost_toggle_active() { ghost.toggleActive(); }
 
 double get_d() { return maze.get_d(); }
 
+int get_invincibility(){ return player.get_invincibility(); }
+
 EMSCRIPTEN_BINDINGS(game_module) {
     function("movePlayer", &movePlayer);
     function("getX", &getX);
@@ -200,6 +210,7 @@ EMSCRIPTEN_BINDINGS(game_module) {
     function("generateMaze", &generateMaze);
     function("tick", &tick);
     function("illuminate", &illuminate);
+    function("get_invincibility", &get_invincibility);
 
     function("addMessage", &addMessage);
     function("cleanUp", &cleanUp);

@@ -195,6 +195,11 @@ setInterval(igniteRandomWindow, 3000);
     const waterImg = new Image();
     waterImg.src = "/assets/water_cooler_bold.png";
 
+    const bubbleImg = new Image();
+    bubbleImg.src = "/assets/bubble_1024.png";
+    const bubbleS = new Image();
+    bubbleS.src = "/assets/bubble_1024_s.png";
+
     // exit
     const exit0Img = new Image();
     exit0Img.src = "/assets/exit-0.png";
@@ -286,7 +291,7 @@ setInterval(igniteRandomWindow, 3000);
       gameoverScreen.style.display = "none";
       canvas.style.display = "block";
       Module.restart();
-      players[playerKey] = { x: Module.getX(), y: Module.getY(), floor: Module.getFloor(), health: Module.getHealth(), direction: Module.getDirection(), active: (gameState === "playing") };
+      players[playerKey] = { x: Module.getX(), y: Module.getY(), floor: Module.getFloor(), health: Module.getHealth(), direction: Module.getDirection(), active: (gameState === "playing"), invincible: Module.get_invincibility() };
       channel.track(players[playerKey]);
       blood_ctx.clearRect(0, 0, 600, 600);
       shadow_ctx.clearRect(0, 0, 600, 600);
@@ -361,6 +366,7 @@ setInterval(igniteRandomWindow, 3000);
     const ctx = setupHiDPICanvas(canvas, 600, 600);
 
     let transitionStart = 0;
+    let invincibility = false;
 
     function drawInstructions(now, alpha = 1) {
       ctx.save();
@@ -546,20 +552,6 @@ setInterval(igniteRandomWindow, 3000);
       ctx.fillRect(bx, by, w * pct, h);
     }
 
-    function updateItemSlot(){
-      const itemIcon = document.getElementById("item-icon");
-
-      if (currentItem === "fire_extinguisher"){
-        itemIcon.src = "/assets/fire_extinguisher_64.png";
-        itemIcon.style.display = "block";
-      } else if (currentItem === "flashlight"){
-        itemIcon.src = "/assets/flashlight_64.png";
-        itemIcon.style.display = "block";
-      } else {
-        itemIcon.style.display = "none"; // empty slot
-      }
-    }
-
     function drawSprite(img, sx, sy, sw, sh, dx, dy, dw, dh) {
       ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
     }
@@ -609,6 +601,8 @@ setInterval(igniteRandomWindow, 3000);
         drawSprite(energyCubeS, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
       } else if (item_id === 3){
         // TODO potion
+      } else if (item_id === 4){
+        drawSprite(bubbleS, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
       }
     }
 
@@ -716,6 +710,8 @@ setInterval(igniteRandomWindow, 3000);
         drawSprite(energyCubeImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
       } else if (item_id == 3){
         drawSprite(potionImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+      } else if (item_id == 4){
+        drawSprite(bubbleImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
       }
     }
 
@@ -886,7 +882,7 @@ setInterval(igniteRandomWindow, 3000);
         } else if (key === playerKey){ // self
           tripleMap.set(map_key(p.x, p.y, 0), Module.getDirection());
         } else {
-          tripleMap.set(map_key(p.x, p.y, 1), [p.direction, p.health]);
+          tripleMap.set(map_key(p.x, p.y, 1), [p.direction, p.health, p.invincibility]);
         }
       }
 
@@ -925,6 +921,9 @@ setInterval(igniteRandomWindow, 3000);
           if (Module.getCell(x, y) == 'H'){ // potion
             drawItem(3, x, y, offsetX, offsetY);
           }
+          if (Module.getCell(x, y) === 'B'){ // bubble
+            drawItemS(4, x, y, offsetX, offsetY, frameCount);
+          }
           if (Module.getCell(x, y) === 'T'){ // temporary fire
             drawSpark(x, y, offsetX, offsetY, frameCount);
           }
@@ -934,11 +933,14 @@ setInterval(igniteRandomWindow, 3000);
           }
           // render players after rendering environment
           if (tripleMap.has(map_key(x, y, 1))){
-            const [dir, hea] = tripleMap.get(map_key(x, y, 1));
+            const [dir, hea, inv] = tripleMap.get(map_key(x, y, 1));
             if (hea > 0){
               drawOther(x, y, offsetX, offsetY, dir, updateEnvironment, Math.floor(Math.random() * 4));
               const { sx, sy } = worldToScreen(x, y);
               drawHealthBar(ctx, sx, sy, hea ?? 100, 100);
+            }
+            if (inv > 0){
+              drawItemS(4, x, y, offsetX, offsetY, frameCount);
             }
           }
           if (tripleMap.has(map_key(x, y, 2))){
@@ -946,6 +948,9 @@ setInterval(igniteRandomWindow, 3000);
           }
           if (tripleMap.has(map_key(x, y, 0))){
             drawSelf(x, y, offsetX, offsetY, tripleMap.get(map_key(x, y, 0)), updateEnvironment);
+            if (Module.get_invincibility() > 0){
+              drawItemS(4, x, y, offsetX, offsetY, frameCount);
+            }
             const { sx, sy } = worldToScreen(x, y);
             drawHealthBar(ctx, sx, sy, Module.getHealth() ?? 100, 100);
             if (Module.getHealth() <= 0){ endGame(); }
@@ -976,6 +981,8 @@ setInterval(igniteRandomWindow, 3000);
         ctx.drawImage(energyCubeImg, slotX + 4, slotY + 4, slotSize - 8, slotSize - 8);
       } else if (currentItem === "potion"){
         ctx.drawImage(potionImg, slotX + 4, slotY + 4, slotSize - 8, slotSize - 8);
+      } else if (currentItem === "bubble"){
+        ctx.drawImage(bubbleImg, slotX + 4, slotY + 4, slotSize - 8, slotSize - 8);
       }
 
       ctx.font = "24px 'Pixelify Sans'";
@@ -1108,6 +1115,8 @@ setInterval(igniteRandomWindow, 3000);
             currentItem = "energy_cube";
           } else if (currentItemCode === 3){
             currentItem = "potion";
+          } else if (currentItemCode === 4){
+            currentItem = "bubble"
           }
           channel.send({
             type: "broadcast",
@@ -1191,6 +1200,11 @@ setInterval(igniteRandomWindow, 3000);
             if (res[0]){
               // player's health incremented already
             }
+          } else if (currentItem === "bubble"){
+            if (res[0]){
+              invincibility = true;
+              // player gets invincibility
+            }
           }
           currentItemCode = -1;
           currentItem = null;
@@ -1205,12 +1219,11 @@ setInterval(igniteRandomWindow, 3000);
         floor: Module.getFloor(),
         health: Module.getHealth(),
         direction: Module.getDirection(),
-        active: players[playerKey].active
+        active: players[playerKey].active,
+        invincible: Module.get_invincibility()
       };
-      render(false);
-
-      // Send new state to others (this does NOT re-subscribe; it's the correct way to update presence)
       channel.track(players[playerKey]);
+      render(false);
     });
 
     setInterval(() => {
@@ -1230,6 +1243,12 @@ setInterval(igniteRandomWindow, 3000);
         console.log('Interval triggered');
         if (gameState !== "playing") return;
         Module.tick();
+        let need_update = false;
+        if (invincibility === true && Module.get_invincibility() == 0){
+          invincibility = false;
+          players[playerKey].invincibility = false;
+          need_update = true;
+        }
         // get player positions, call moveGhost, broadcast
         const playerCoords = new Module.VectorPairIntInt();
 
@@ -1288,14 +1307,17 @@ setInterval(igniteRandomWindow, 3000);
 
               console.log(items);
               players[playerKey].health = Module.getHealth(); // instant update since local
+              need_update = true;
             }
           }
         }
+
+        if (need_update){ channel.track(players[playerKey]); }
       }, intervalDuration);
     }
 
     // Render once (in case presence sync hasn't arrived yet)
-    players[playerKey] = { x: Module.getX(), y: Module.getY(), floor: Module.getFloor(), health: Module.getHealth(), direction: Module.getDirection(), active: (gameState === "playing") };
+    players[playerKey] = { x: Module.getX(), y: Module.getY(), floor: Module.getFloor(), health: Module.getHealth(), direction: Module.getDirection(), active: (gameState === "playing"), invincible: Module.get_invincibility() };
     render(false);
   </script>
 </body>
