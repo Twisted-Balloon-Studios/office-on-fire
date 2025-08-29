@@ -6,15 +6,16 @@
   <link rel="icon" type="image/gif" href="/assets/fire.gif">
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;700&display=swap" rel="stylesheet"> <!-- Pixelify Sans from Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet"> <!-- Montserrat Black -->
 </head>
 <body>
   <div id="hud">Arrow keys (move), 'c' (pick up item), 'v' (use item)</div>
-
+<!-- 
   <div id="start-screen">
     <h1>Office On Fire</h1>
     <button id="start-button">Start Game</button>
   </div>
-
+ -->
   <div id="building">
     <div class="canvas-wrapper" style="position: relative; width: 600px; height: 600px;">
       <canvas id="game" width="600" height="600" style="position:absolute;top: 0; left: 0;z-index:0;"></canvas>
@@ -154,12 +155,16 @@ setInterval(igniteRandomWindow, 3000);
     // assets
     const fireExtinguisherImg = new Image();
     fireExtinguisherImg.src = "/assets/fire_extinguisher_1024.png";
+    const fireExtinguisherS = new Image();
+    fireExtinguisherS.src = "/assets/fire_extinguisher_1024_s.png";
     const laserImg = new Image();
     laserImg.src = "/assets/laser_1024.png";
     const potionImg = new Image();
     potionImg.src = "/assets/potion_1024.png";
     const energyCubeImg = new Image();
     energyCubeImg.src = "/assets/energy_cube_gpt_1024.png";
+    const energyCubeS = new Image();
+    energyCubeS.src = "/assets/energy_cube_gpt_1024_s.png";
     const fireImg = new Image();
     fireImg.src = "/assets/fire_256.png";
     const ghostImg = new Image();
@@ -170,6 +175,14 @@ setInterval(igniteRandomWindow, 3000);
     selfImg.src = "/assets/self_1024.png";
     const otherImg = new Image();
     otherImg.src = "/assets/other_1024.png";
+    const sparkImg = new Image();
+    sparkImg.src = "/assets/spark_256.png";
+    const ghostInstImg = new Image();
+    ghostInstImg.src = "/assets/ghost_1024.png";
+    const exitImg = new Image();
+    exitImg.src = "/assets/exit.png";
+    const arrowKeysImg = new Image();
+    arrowKeysImg.src = "/assets/arrowkeys.png";
 
     // exit
     const exit0Img = new Image();
@@ -199,7 +212,7 @@ setInterval(igniteRandomWindow, 3000);
     const levelCompleteSound = new Audio('/assets/level-complete.m4a');
     const explosionSound = new Audio('/assets/explosion.m4a');
     const getItemSound = new Audio('/assets/get-item.m4a');
-    function playSound(obj){ obj.currentTime = 0; obj.play(); }
+    function playSound(obj){ obj.volume = 0.3; obj.currentTime = 0; obj.play(); }
 
     let timeoutId = null; // store loop's timer
     let sound = null;
@@ -229,30 +242,30 @@ setInterval(igniteRandomWindow, 3000);
       }
     }
 
-    const startScreen = document.getElementById("start-screen");
-    const gameCanvas = document.getElementById("game");
+    //const startScreen = document.getElementById("start-screen");
+    // const gameCanvas = document.getElementById("game");
     const gameoverScreen = document.getElementById("gameover-screen");
-    const startButton = document.getElementById("start-button");
+    //const startButton = document.getElementById("start-button");
     const restartButton = document.getElementById("restart-button");
     let currentItem = null;
     let currentItemCode = -1;
     let itemIcon = document.getElementById("item-icon")
-    let gameState = "start"
+    let gameState = "instructions"
 
     var items = []; // blood splatter
 
-    startButton.onclick = () => {
-      gameState = "playing";
-      bgMusic.play();
-      stopSoundLoop();
-      playSoundLoopWithRandomDelay("/assets/help_me.mp3", 40, 10);
-      startScreen.style.display = "none";
-      gameCanvas.style.display = "block";
-      ghostInterval(Module.get_d());
-      players[playerKey].active = true;
-      channel.track(players[playerKey]);
-      //startGame(); // initialize maze, players, ghosts, etc.
-    };
+    // startButton.onclick = () => {
+    //   gameState = "playing";
+    //   bgMusic.play();
+    //   stopSoundLoop();
+    //   playSoundLoopWithRandomDelay("/assets/help_me.mp3", 40, 10);
+    //   //startScreen.style.display = "none";
+    //   gameCanvas.style.display = "block";
+    //   ghostInterval(Module.get_d());
+    //   players[playerKey].active = true;
+    //   channel.track(players[playerKey]);
+    //   //startGame(); // initialize maze, players, ghosts, etc.
+    // };
 
     restartButton.onclick = () => {
       gameState = "playing";
@@ -260,7 +273,7 @@ setInterval(igniteRandomWindow, 3000);
       stopSoundLoop();
       playSoundLoopWithRandomDelay("/assets/help_me.mp3", 40, 10);
       gameoverScreen.style.display = "none";
-      gameCanvas.style.display = "block";
+      canvas.style.display = "block";
       Module.restart();
       players[playerKey] = { x: Module.getX(), y: Module.getY(), floor: Module.getFloor(), health: Module.getHealth(), direction: Module.getDirection(), active: (gameState === "playing") };
       channel.track(players[playerKey]);
@@ -317,8 +330,125 @@ setInterval(igniteRandomWindow, 3000);
     let ghosts = {}; // { key: {x,y,floor} }
 
     // --- Canvas render ---
+    function setupHiDPICanvas(canvas, width, height) {
+      const dpr = window.devicePixelRatio || 1;
+
+      // Set canvas internal resolution *higher*
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+
+      // Keep CSS size the same
+      canvas.style.width = width + "px";
+      canvas.style.height = height + "px";
+
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // scale drawings so coords stay logical
+      return ctx;
+    }
+
     const canvas = document.getElementById("game");
-    const ctx = canvas.getContext("2d");
+    const ctx = setupHiDPICanvas(canvas, 600, 600);
+
+    let transitionStart = 0;
+
+    function drawInstructions(now, alpha = 1) {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      ctx.fillStyle = "#0f0f12";
+      ctx.fillRect(0, 0, 600, 600);
+
+      ctx.fillStyle = "#111318";
+      ctx.fillRect(50, 50, 500, 500);
+
+      ctx.fillStyle = "#e5e7eb";
+      ctx.font = "bold 36px 'Montserrat', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("Office on Fire", 300, 100);
+
+      ctx.font = "12px 'Montserrat', sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillStyle = "#cbd5e1";
+
+      ctx.drawImage(
+        exitImg,
+        100, // dx
+        140, // dy
+        64,
+        64
+      );
+      ctx.fillText("The office is on fire...", 180, 150);
+      ctx.fillText("Head to the exit as quickly as possible!", 180, 170);
+
+      ctx.drawImage(
+        arrowKeysImg,
+        100, // dx
+        220, // dy
+        64,
+        64
+      );
+      ctx.fillText("Arrow Keys: Move", 180, 230);
+      ctx.fillText("c                   : Pick up item", 180, 250);
+      ctx.fillText("v                   : Use item", 180, 270);
+
+
+      ctx.drawImage(
+        ghostInstImg,
+        100, // dx
+        300, // dy
+        64,
+        64
+      );
+      ctx.fillText("Avoid the burning corpse!", 180, 340);
+
+      ctx.font = "10px 'Montserrat', sans-serif";
+
+      ctx.drawImage(
+        fireExtinguisherImg,
+        100, // dx
+        380, // dy
+        64,
+        64
+      );
+      ctx.fillText("Puts out fire", 100, 460);
+
+      ctx.drawImage(
+        laserImg,
+        210, // dx
+        380, // dy
+        64,
+        64
+      );
+      ctx.fillText("Broadcast location", 190, 460);
+
+      ctx.drawImage(
+        potionImg,
+        320, // dx
+        380, // dy
+        64,
+        64
+      );
+      ctx.fillText("Adds HP", 335, 460);
+
+      ctx.drawImage(
+        energyCubeImg,
+        430, // dx
+        380, // dy
+        64,
+        64
+      );
+      ctx.fillText("Fries corpses", 425, 460);
+
+      // pulsing "Press any key"
+      const pulse = 0.55 + 0.35 * Math.sin(now / 500);
+      ctx.globalAlpha = pulse * alpha;
+      ctx.font = "20px 'Pixelify Sans'";
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#94a3b8";
+      ctx.fillText("Press any key to start", 300, 530);
+
+      ctx.restore();
+    }
 
     /* blood splatter section begin */
 
@@ -384,10 +514,12 @@ setInterval(igniteRandomWindow, 3000);
     const tile = 30, ox = 60, oy = 60;
 
     function worldToScreen(x, y) {
-      const cameraX = Module.getX() - Math.floor(canvas.width / tile / 2);
-      const cameraY = Module.getY() - Math.floor(canvas.height / tile / 2);
+      const cameraX = Module.getX() - Math.floor(canvas.clientWidth / tile / 2);
+      const cameraY = Module.getY() - Math.floor(canvas.clientHeight / tile / 2);
       return { sx: (x - cameraX) * tile, sy: (y - cameraY) * tile };
     }
+
+    ctx.imageSmoothingEnabled = false;
 
     function drawHealthBar(ctx, sx, sy, health, maxHealth) {
       const w = tile, h = 4;
@@ -439,6 +571,55 @@ setInterval(igniteRandomWindow, 3000);
       const dy = oy + y * tile - (dh - tile)/2;
 
       drawSprite(fireImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+    }
+
+    function drawItemS(item_id, x, y, ox, oy, frameCount) {
+      const spriteW = 256, spriteH = 256;
+
+      // animation frame
+      const frame = frameCount % 4;
+      const sx = frame * spriteW;
+      const sy = 0;
+
+      // scale factor, e.g., 1.5x or 2x
+      const scale = 2; 
+      const dw = tile * scale;
+      const dh = tile * scale;
+
+      // center the bigger fire on the tile
+      const dx = ox + x * tile - (dw - tile)/2;
+      const dy = oy + y * tile - (dh - tile)/2;
+
+      if (item_id === 0){
+        drawSprite(fireExtinguisherS, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+      } else if (item_id === 1){
+        // TODO laser
+      } else if (item_id === 2){
+        drawSprite(energyCubeS, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+      } else if (item_id === 3){
+        // TODO potion
+      }
+    }
+
+
+    function drawSpark(x, y, ox, oy, frameCount) {
+      const spriteW = 256, spriteH = 256;
+
+      // animation frame
+      const frame = frameCount % 9;
+      const sx = frame * spriteW;
+      const sy = 0;
+
+      // scale factor, e.g., 1.5x or 2x
+      const scale = 2; 
+      const dw = tile * scale;
+      const dh = tile * scale;
+
+      // center the bigger fire on the tile
+      const dx = ox + x * tile - (dw - tile)/2;
+      const dy = oy + y * tile - (dh - tile)/2;
+
+      drawSprite(sparkImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
     }
 
     function drawFloor(x, y, ox, oy, sprite_id) {
@@ -575,12 +756,42 @@ setInterval(igniteRandomWindow, 3000);
     let ghostFrameCount = 0;
     let selfFrameCount = 0;
 
-    function render(updateEnvironment) {
-      if (gameState !== "playing") return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    function render(updateEnvironment){
+      const now = performance.now();
+      if (gameState === "instructions"){
+        drawInstructions(now, 1);
+        return;
+      } else if (gameState === "transition"){
+        console.log("HERE")
+        const elapsed = now - transitionStart;
+        console.log(elapsed);
+        const duration = 1000; // ms
+        const t = Math.min(1, elapsed / duration);
+        const alpha = 1 - t;
+        drawInstructions(now, alpha);
+        if (t >= 1){ 
+          gameState = "playing";     
+          bgMusic.play();
+          stopSoundLoop();
+          playSoundLoopWithRandomDelay("/assets/help_me.mp3", 40, 10);
+          //startScreen.style.display = "none";
+          canvas.style.display = "block";
+          ghostInterval(Module.get_d());
+          players[playerKey].active = true;
+          channel.track(players[playerKey]);
+          //startGame(); // initialize maze, players, ghosts, etc.
+        }
+        return;
+      }
+      // gameState = playing or gameover
+      if (gameState !== "playing"){
+        // gameover
+        return;
+      }
+      ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
 
-      let offsetX = canvas.width / 2 - Module.getX() * tile;
-      let offsetY = canvas.height / 2 - Module.getY() * tile;
+      let offsetX = canvas.clientWidth / 2 - Module.getX() * tile;
+      let offsetY = canvas.clientHeight / 2 - Module.getY() * tile;
       let mazeHeight = Module.getHeight();
       let mazeWidth = Module.getWidth();
 
@@ -619,20 +830,19 @@ setInterval(igniteRandomWindow, 3000);
             drawFireWall(x, y, offsetX, offsetY, frameCount);
           }
           if (Module.getCell(x, y) === 'I') { // fire extinguisher
-            drawItem(0, x, y, offsetX, offsetY);
+            drawItemS(0, x, y, offsetX, offsetY, frameCount);
           }
           if (Module.getCell(x, y) == 'L'){ // laser
             drawItem(1, x, y, offsetX, offsetY);
           }
           if (Module.getCell(x, y) == 'N'){ // energy ball
-            drawItem(2, x, y, offsetX, offsetY);
+            drawItemS(2, x, y, offsetX, offsetY, frameCount);
           }
           if (Module.getCell(x, y) == 'H'){ // potion
             drawItem(3, x, y, offsetX, offsetY);
           }
           if (Module.getCell(x, y) === 'T'){ // temporary fire
-            ctx.fillStyle = "#7D0B0B";
-            ctx.fillRect(offsetX + x*tile, offsetY + y*tile, tile, tile);
+            drawSpark(x, y, offsetX, offsetY, frameCount);
           }
           if (Module.getCell(x, y) === 'i'){ // illuminated
             ctx.fillStyle = "#00FF80";
@@ -766,6 +976,23 @@ setInterval(igniteRandomWindow, 3000);
 
     // --- Movement -> update local + track() presence ---
     window.addEventListener("keydown", (e) => {
+
+      const ignoreKeys = [
+        'Shift', 'Control', 'Alt', 'Meta', 'Tab', 'CapsLock',
+        'Escape', 'Fn', 'ContextMenu', 'Home', 'End',
+        'PageUp', 'PageDown', 'Insert', 'Delete'
+      ];
+
+      if (ignoreKeys.includes(e.key)) return;
+
+      if (gameState === "instructions"){
+        gameState = "transition";
+        transitionStart = performance.now();
+        console.log(transitionStart);
+        return;
+      } else if (gameState === "transition"){
+        return;
+      }
       if (gameState !== "playing") return;
 
       if (e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === "ArrowLeft" || e.key === "ArrowRight"){ // movement
@@ -802,9 +1029,10 @@ setInterval(igniteRandomWindow, 3000);
 
         console.log("tried to pick up", x, y, floor);
 
-        currentItemCode = Module.tryPickup(x, y, floor);
+        let cur = Module.tryPickup(x, y, floor);
 
-        if (currentItemCode !== -1) {
+        if (cur !== -1) {
+          currentItemCode = cur;
           // picked locally → broadcast to others
           console.log("picked up");
           playSound(getItemSound);
@@ -922,7 +1150,7 @@ setInterval(igniteRandomWindow, 3000);
     });
 
     setInterval(() => {
-      if (gameState !== "playing") return;
+      if (gameState === "instructions" || gameState === "gameover") return;
       render(true);
     }, 100);
 

@@ -25,6 +25,7 @@ python3 -m http.server 8080
 - Blood splatter [decx](https://jsfiddle.net/decx/Ca9Y7/)
 - Hurt [pepsimanfan](https://pixabay.com/sound-effects/young-man-being-hurt-95628/)
 - Game over [Gheorgheleza](https://pixabay.com/sound-effects/desperate-shout-106691/)
+- Spark [kurohina](https://opengameart.org/content/spark-effect)
 
 - Flying bird CSS [Douglas @imdoug](https://codepen.io/imdoug/pen/vYZNoYr)
 - Cloud CSS [Paul Firth @kellkellkell](https://codepen.io/kellkellkell/pen/VbzayM)

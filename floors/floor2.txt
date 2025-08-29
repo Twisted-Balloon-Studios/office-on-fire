@@ -1,17 +1,17 @@
-2 2 5 5 0.3 2.0
+2 2 4 7 0.3 2.0
 #################################
 #I.............................I#
-#.......##################...H..#
-#.......#XXXXXXXXXXXXXXXX#N.....#
-#.......#XXXXXXXXXXXXXXXX###.####
-#..######XXXXXXXXXXXXXXXXXX#.#XXX
-#..#XXXXXXXXXXXXXXXXXXXXXXX#.#XXX
-#..#XXXXXXXXXXXXXXXXXXXXXXX#.#XXX
-#..#XXXXXXXXXXXXXXXXXXXXX###.####
-#..#XXXXXXXXXXXXXXXXXXXXX#FFFFFF#
-#..#XXXXXX################FFFFFF#
+#............................H..#
+#.......##################N.....#
+#.......#XXXXXXXXXXXXXXXX###..###
+#..######XXXXXXXXXXXXXXXXXX#..#XX
+#..#XXXXXXXXXXXXXXXXXXXXXXX#..#XX
+#..#XXXXXXXXXXXXXXXXXXXXXXX#..#XX
+#..#XXXXXXXXXXXXXXXXXXXXX###..###
+#..#XXXXXXXXX#############FFFFFF#
+#..#XXXXXX####............FFFFFF#
 #..###XXXX#...............FFEEFF#
-#...I#XXXX#...############FFEEFF#
-#....######...#XXXXXXXXXX#FFFFFF#
+#...I######...############FFEEFF#
+#.............#XXXXXXXXXX#FFFFFF#
 #L............#XXXXXXXXXX#FFFFFF#
 ###############XXXXXXXXXX########
