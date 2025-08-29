@@ -184,6 +184,17 @@ setInterval(igniteRandomWindow, 3000);
     const arrowKeysImg = new Image();
     arrowKeysImg.src = "/assets/arrowkeys.png";
 
+    const chairImg = new Image();
+    chairImg.src = "/assets/chair_dark.png";
+    const vendingImg = new Image();
+    vendingImg.src = "/assets/vending_machine_bold.png";
+    const tableImg = new Image();
+    tableImg.src = "/assets/table_revamped.png";
+    const printerImg = new Image();
+    printerImg.src = "/assets/printer.png";
+    const waterImg = new Image();
+    waterImg.src = "/assets/water_cooler_bold.png";
+
     // exit
     const exit0Img = new Image();
     exit0Img.src = "/assets/exit-0.png";
@@ -654,6 +665,34 @@ setInterval(igniteRandomWindow, 3000);
       }
     }
 
+    function drawOffice(item_id, x, y, ox, oy) {
+      const spriteW = 1024, spriteH = 1024;
+
+      // animation frame
+      const sx = 0;
+      const sy = 0;
+
+      // scale factor, e.g., 1.5x or 2x
+      const scale = 2;
+      const dw = tile * scale;
+      const dh = tile * scale;
+
+      // center the bigger fire on the tile
+      const dx = ox + x * tile - (dw - tile)/2;
+      const dy = oy + y * tile - (dh - tile)/2;
+      if (item_id == 0){
+        drawSprite(chairImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+      } else if (item_id == 1){
+        drawSprite(tableImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+      } else if (item_id == 2){
+        drawSprite(waterImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+      } else if (item_id == 3){
+        drawSprite(vendingImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+      } else if (item_id == 4){
+        drawSprite(printerImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+      }
+    }
+
     function drawItem(item_id, x, y, ox, oy) {
       const spriteW = 1024, spriteH = 1024;
 
@@ -823,9 +862,54 @@ setInterval(igniteRandomWindow, 3000);
         }
       }
 
+      const tripleMap = new Map();
+      const map_key = (a, b, c) => `${a},${b},${c}`;
+
+      // draw ghosts
+      for (const [key, g] of Object.entries(ghosts)) {
+        if (ghosts[key].floor !== Module.getFloor()){
+          // don't draw, not on the same floor
+        } else if (!ghosts[key].active){
+          // don't draw, ghost not active
+        } else {
+          tripleMap.set(map_key(g.x, g.y, 2), Module.ghostGetDirection());
+        }
+      }
+
+      // draw players
+      for (const [key, p] of Object.entries(players)) {
+        ctx.fillStyle = key === playerKey ? "red" : "blue";
+        if (key !== playerKey && players[key].floor !== Module.getFloor()){
+          // don't draw, not on the same floor
+        } else if (!players[key].active){
+          // don't draw, not active
+        } else if (key === playerKey){ // self
+          tripleMap.set(map_key(p.x, p.y, 0), Module.getDirection());
+        } else {
+          tripleMap.set(map_key(p.x, p.y, 1), [p.direction, p.health]);
+        }
+      }
+
       // draw maze
-      for (let x = 0; x < mazeHeight; x++) {
-        for (let y = 0; y < mazeWidth; y++) {
+      for (let y = 0; y < mazeWidth; y++) {
+        for (let x = 0; x < mazeHeight; x++){
+          if (Module.getCell(x, y) === 'c'){ // chair
+            drawOffice(0, x, y, offsetX, offsetY);
+          }
+          if (Module.getCell(x, y) === 't'){ // table
+            drawOffice(1, x, y, offsetX, offsetY);
+          }
+          if (Module.getCell(x, y) === 'w'){ // water cooler
+            drawOffice(2, x, y, offsetX, offsetY);
+          }
+          if (Module.getCell(x, y) === 'v'){ // vending machine
+            drawOffice(3, x, y, offsetX, offsetY);
+          }
+          if (Module.getCell(x, y) === 'p'){ // printer
+            drawOffice(4, x, y, offsetX, offsetY);
+          }
+        }
+        for (let x = 0; x < mazeHeight; x++) {
           if (Module.getCell(x, y) === 'F') { // fire
             drawFireWall(x, y, offsetX, offsetY, frameCount);
           }
@@ -848,48 +932,28 @@ setInterval(igniteRandomWindow, 3000);
             ctx.fillStyle = "#00FF80";
             ctx.fillRect(offsetX + x*tile, offsetY + y*tile, tile, tile);
           }
+          // render players after rendering environment
+          if (tripleMap.has(map_key(x, y, 1))){
+            const [dir, hea] = tripleMap.get(map_key(x, y, 1));
+            if (hea > 0){
+              drawOther(x, y, offsetX, offsetY, dir, updateEnvironment, Math.floor(Math.random() * 4));
+              const { sx, sy } = worldToScreen(x, y);
+              drawHealthBar(ctx, sx, sy, hea ?? 100, 100);
+            }
+          }
+          if (tripleMap.has(map_key(x, y, 2))){
+            drawGhost(x, y, offsetX, offsetY, tripleMap.get(map_key(x, y, 2)), updateEnvironment);
+          }
+          if (tripleMap.has(map_key(x, y, 0))){
+            drawSelf(x, y, offsetX, offsetY, tripleMap.get(map_key(x, y, 0)), updateEnvironment);
+            const { sx, sy } = worldToScreen(x, y);
+            drawHealthBar(ctx, sx, sy, Module.getHealth() ?? 100, 100);
+            if (Module.getHealth() <= 0){ endGame(); }
+          }
         }
       }
       if (updateEnvironment){
         frameCount++;
-      }
-
-      // draw ghosts
-      for (const [key, g] of Object.entries(ghosts)) {
-        if (ghosts[key].floor !== Module.getFloor()){
-          // don't draw, not on the same floor
-        } else if (!ghosts[key].active){
-          // don't draw, ghost not active
-        } else {
-          drawGhost(g.x, g.y, offsetX, offsetY, Module.ghostGetDirection(), updateEnvironment)
-        }
-      }
-
-      // draw grid (optional)
-      // ctx.globalAlpha = 0.2;
-      // for (let i = 0; i < 30; i++) {
-      //   ctx.fillRect(ox + i*tile, oy, 1, 300);
-      //   ctx.fillRect(ox, oy + i*tile, 300, 1);
-      // }
-      // ctx.globalAlpha = 1;
-
-      // draw players
-      for (const [key, p] of Object.entries(players)) {
-        ctx.fillStyle = key === playerKey ? "red" : "blue";
-        if (key !== playerKey && players[key].floor !== Module.getFloor()){
-          // don't draw, not on the same floor
-        } else if (!players[key].active){
-          // don't draw, not active
-        } else if (key === playerKey){ // self
-          drawSelf(p.x, p.y, offsetX, offsetY, Module.getDirection(), updateEnvironment)
-          const { sx, sy } = worldToScreen(p.x, p.y);
-          drawHealthBar(ctx, sx, sy, p.health ?? 100, 100);
-          if (p.health <= 0){ endGame(); }
-        } else {
-          drawOther(p.x, p.y, offsetX, offsetY, p.direction, updateEnvironment, Math.floor(Math.random() * 4));
-          const { sx, sy } = worldToScreen(p.x, p.y);
-          drawHealthBar(ctx, sx, sy, p.health ?? 100, 100);
-        }
       }
 
       // item slot

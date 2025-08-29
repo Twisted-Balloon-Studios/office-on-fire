@@ -19,3 +19,9 @@ The first line contains 4 integers (`player.x`, `player.y`, `ghost.x`, `ghost.y`
 - `h` = hammer
 - `w` = fake wall
 - `i` = illuminated
+
+- `t` = table
+- `c` = chair
+- `v` = vending machine
+- `w` = water cooler
+- `p` = printer

@@ -18,10 +18,16 @@ The first line contains 4 integers (`player.x`, `player.y`, `ghost.x`, `ghost.y`
 
 - `h` = hammer
 - `w` = fake wall
-- `i` = illuminated1 1 5 5 0.2 1.0
+- `i` = illuminated
+
+- `t` = table
+- `c` = chair
+- `v` = vending machine
+- `w` = water cooler
+- `p` = printer1 1 5 5 0.2 1.0
 ###########################
-#........................I#
-#.........................#
+#.c................v.v...I#
+#.t.......................#
 #.........................#
 #.........................#
 #......................####
