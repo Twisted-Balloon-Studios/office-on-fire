@@ -44,7 +44,7 @@ if (ENVIRONMENT_IS_NODE) {
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmpxkchmsrw.js
+// include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmpjpest4fy.js
 
   Module['expectedDataFileDownloads'] ??= 0;
   Module['expectedDataFileDownloads']++;
@@ -208,25 +208,25 @@ Module['FS_createPath']("/", "floors", true, true);
     }
 
     }
-    loadPackage({"files": [{"filename": "/floors/README.md", "start": 0, "end": 495}, {"filename": "/floors/floor0.txt", "start": 495, "end": 762}, {"filename": "/floors/floor1.txt", "start": 762, "end": 1053}, {"filename": "/floors/floor2.txt", "start": 1053, "end": 1613}, {"filename": "/floors/floor3.txt", "start": 1613, "end": 3526}], "remote_package_size": 3526});
+    loadPackage({"files": [{"filename": "/floors/README.md", "start": 0, "end": 495}, {"filename": "/floors/floor0.txt", "start": 495, "end": 762}, {"filename": "/floors/floor1.txt", "start": 762, "end": 1053}, {"filename": "/floors/floor2.txt", "start": 1053, "end": 1613}, {"filename": "/floors/floor3.txt", "start": 1613, "end": 3526}, {"filename": "/floors/floor4.txt", "start": 3526, "end": 4244}, {"filename": "/floors/floor5.txt", "start": 4244, "end": 7662}], "remote_package_size": 7662});
 
   })();
 
-// end include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmpxkchmsrw.js
-// include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmpqkxaymyx.js
+// end include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmpjpest4fy.js
+// include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmppkve6sn8.js
 
     // All the pre-js content up to here must remain later on, we need to run
     // it.
     if ((typeof ENVIRONMENT_IS_WASM_WORKER != 'undefined' && ENVIRONMENT_IS_WASM_WORKER) || (typeof ENVIRONMENT_IS_PTHREAD != 'undefined' && ENVIRONMENT_IS_PTHREAD) || (typeof ENVIRONMENT_IS_AUDIO_WORKLET != 'undefined' && ENVIRONMENT_IS_AUDIO_WORKLET)) Module['preRun'] = [];
     var necessaryPreJSTasks = Module['preRun'].slice();
-  // end include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmpqkxaymyx.js
-// include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmpk0wi1ksj.js
+  // end include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmppkve6sn8.js
+// include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmpftqg7_8f.js
 
     if (!Module['preRun']) throw 'Module.preRun should exist because file support used it; did a pre-js delete it?';
     necessaryPreJSTasks.forEach((task) => {
       if (Module['preRun'].indexOf(task) < 0) throw 'All preRun tasks that exist before user pre-js code should remain after; did you replace Module or modify Module.preRun?';
     });
-  // end include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmpk0wi1ksj.js
+  // end include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmpftqg7_8f.js
 
 
 var arguments_ = [];

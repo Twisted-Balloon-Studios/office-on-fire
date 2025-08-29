@@ -23,7 +23,7 @@ void Maze::generate(int h, int w, int f, Player& pl, Ghost& gh){
     flr = f;
     pl.floor = f;
     gh.set_floor(f);
-    if (f <= 3){
+    if (f <= 5){
         srand(seed*f);
         from_file("floors/floor" + std::to_string(f) + ".txt", pl, gh);
     } else {
