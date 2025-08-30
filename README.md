@@ -1,5 +1,7 @@
 # Office On Fire
 
+[YouTube](https://www.youtube.com/watch?v=78vjdwuxQVQ) (please leave a like!)
+
 ### Dependency
 - [emsdk](https://emscripten.org/docs/getting_started/downloads.html)
 
@@ -10,8 +12,11 @@ In `index.html`, add Supabase URL and KEY.
 python3 -m http.server 8080
 ```
 
+### Deployment
+In Project Settings/Build Deployment Configuration, set `Preset framework` to `Other` and `Root directory` to `./`. Do not set the other fields.
+In Project Settings/Environment Variables, add `SUPABASE_URL` and `SUPABASE_ANONKEY`. 
+
 ### Attribution
-- Bloody zombie [Svetlana Kushnariova (Cabbit) & Jordan Irwin (AntumDeluge)](https://opengameart.org/content/zombies)
 - Office workers [Unknown](https://opengameart.org/content/office-worker-sprites)
 - Potion [ArlanTR](https://opengameart.org/node/109980)
 - Laser [\[deleted\]](https://www.reddit.com/r/PixelArt/comments/v3hnwd/laser_pointer_by_me/)
@@ -26,13 +31,8 @@ python3 -m http.server 8080
 - Hurt [pepsimanfan](https://pixabay.com/sound-effects/young-man-being-hurt-95628/)
 - Game over [Gheorgheleza](https://pixabay.com/sound-effects/desperate-shout-106691/)
 - Spark [kurohina](https://opengameart.org/content/spark-effect)
-
 - Flying bird CSS [Douglas @imdoug](https://codepen.io/imdoug/pen/vYZNoYr)
 - Cloud CSS [Paul Firth @kellkellkell](https://codepen.io/kellkellkell/pen/VbzayM)
-- Stone Hammer [FacadeGaikan](https://opengameart.org/node/29290)
-
 - Fire extinguisher [Karim-Nessim](https://pixabay.com/sound-effects/fire-extinguishing-212651/)
 - Fire [MaxHammarbäck](https://pixabay.com/sound-effects/fire-sound-efftect-21991/)
-- Fire [SoundReality](https://pixabay.com/sound-effects/fire-sound-334130/)
-
 - Help [Maddog0963 (Freesound)](https://pixabay.com/sound-effects/help-me-mp3-54969/)
