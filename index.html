@@ -170,68 +170,52 @@ setInterval(igniteRandomWindow, 3000);
     window.supabase = supabase;
 
     // assets
-    const fireExtinguisherImg = new Image();
-    fireExtinguisherImg.src = "/assets/fire_extinguisher_1024.png";
-    const fireExtinguisherS = new Image();
-    fireExtinguisherS.src = "/assets/fire_extinguisher_1024_s.png";
-    const laserImg = new Image();
-    laserImg.src = "/assets/laser_1024.png";
-    const potionImg = new Image();
-    potionImg.src = "/assets/potion_1024.png";
-    const energyCubeImg = new Image();
-    energyCubeImg.src = "/assets/energy_cube_gpt_1024.png";
-    const energyCubeS = new Image();
-    energyCubeS.src = "/assets/energy_cube_gpt_1024_s.png";
-    const fireImg = new Image();
-    fireImg.src = "/assets/fire_256.png";
-    const ghostImg = new Image();
-    ghostImg.src = "/assets/ghost_512.png";
-    const brickImg = new Image();
-    brickImg.src = "/assets/brick_gpt_1024.png";
-    const selfImg = new Image();
-    selfImg.src = "/assets/self_1024.png";
-    const otherImg = new Image();
-    otherImg.src = "/assets/other_1024.png";
-    const sparkImg = new Image();
-    sparkImg.src = "/assets/spark_256.png";
-    const ghostInstImg = new Image();
-    ghostInstImg.src = "/assets/ghost_1024.png";
-    const exitImg = new Image();
-    exitImg.src = "/assets/exit.png";
-    const arrowKeysImg = new Image();
-    arrowKeysImg.src = "/assets/arrowkeys.png";
 
-    const chairImg = new Image();
-    chairImg.src = "/assets/chair_dark.png";
-    const vendingImg = new Image();
-    vendingImg.src = "/assets/vending_machine_bold.png";
-    const tableImg = new Image();
-    tableImg.src = "/assets/table_revamped.png";
-    const printerImg = new Image();
-    printerImg.src = "/assets/printer.png";
-    const waterImg = new Image();
-    waterImg.src = "/assets/water_cooler_bold.png";
+    const imageSources = {
+      fire_extinguisher: "/assets/fire_extinguisher_1024.png",
+      fire_extinguisher_s: "/assets/fire_extinguisher_1024_s.png",
+      laser: "/assets/laser_1024.png",
+      potion: "/assets/potion_1024.png",
+      energy_cube: "/assets/energy_cube_gpt_1024.png",
+      energy_cube_s: "/assets/energy_cube_gpt_1024_s.png",
+      fire: "/assets/fire_256.png",
+      ghost: "/assets/ghost_512.png",
+      brick: "/assets/brick_gpt_1024.png",
+      self: "/assets/self_1024.png",
+      other: "/assets/other_1024.png",
+      spark: "/assets/spark_256.png",
+      ghost_inst: "/assets/ghost_1024.png",
+      exit: "/assets/exit.png",
+      arrow_keys: "/assets/arrowkeys.png",
+      chair: "/assets/chair_dark.png",
+      vending: "/assets/vending_machine_bold.png",
+      table: "/assets/table_revamped.png",
+      printer: "/assets/printer.png",
+      water: "/assets/water_cooler_bold.png",
+      bubble: "/assets/bubble_1024.png",
+      bubble_s: "/assets/bubble_1024_s.png",
+      exit_0: "/assets/exit-0.png",
+      exit_1: "/assets/exit-1.png",
+      exit_2: "/assets/exit-2.png",
+      exit_3: "/assets/exit-3.png",
+      wood_tile: "/assets/wood_tile_1024.png",
+      stone_tile: "/assets/stone_tile_1024.png"
+    }
+    let images = {};
+    let loadedImages = 0;
+    const totalImages = Object.keys(imageSources).length;
+    function loadImages(sources) {
+      const promises = Object.entries(sources).map(([key, src]) => {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => resolve([key, img]);
+          img.onerror = () => reject(new Error("Failed to load " + src));
+          img.src = src;
+        });
+      });
 
-    const bubbleImg = new Image();
-    bubbleImg.src = "/assets/bubble_1024.png";
-    const bubbleS = new Image();
-    bubbleS.src = "/assets/bubble_1024_s.png";
-
-    // exit
-    const exit0Img = new Image();
-    exit0Img.src = "/assets/exit-0.png";
-    const exit1Img = new Image();
-    exit1Img.src = "/assets/exit-1.png";
-    const exit2Img = new Image();
-    exit2Img.src = "/assets/exit-2.png";
-    const exit3Img = new Image();
-    exit3Img.src = "/assets/exit-3.png";
-
-    // floor
-    const woodTileImg = new Image();
-    woodTileImg.src = "/assets/wood_tile_1024.png";
-    const stoneTileImg = new Image();
-    stoneTileImg.src = "/assets/stone_tile_1024.png";
+      return Promise.all(promises).then(entries => Object.fromEntries(entries));
+    }
 
 
     // audio
@@ -491,9 +475,8 @@ setInterval(igniteRandomWindow, 3000);
       ctx.font = "12px 'Montserrat', sans-serif";
       ctx.textAlign = "left";
       ctx.fillStyle = "#cbd5e1";
-
       ctx.drawImage(
-        exitImg,
+        images.exit,
         50, // dx
         140, // dy
         64,
@@ -503,7 +486,7 @@ setInterval(igniteRandomWindow, 3000);
       ctx.fillText("Head to the exit as quickly as possible!", 130, 170);
 
       ctx.drawImage(
-        arrowKeysImg,
+        images.arrow_keys,
         50, // dx
         220, // dy
         64,
@@ -515,7 +498,7 @@ setInterval(igniteRandomWindow, 3000);
 
 
       ctx.drawImage(
-        ghostInstImg,
+        images.ghost_inst,
         50, // dx
         300, // dy
         64,
@@ -526,7 +509,7 @@ setInterval(igniteRandomWindow, 3000);
       ctx.font = "10px 'Montserrat', sans-serif";
 
       ctx.drawImage(
-        fireExtinguisherImg,
+        images.fire_extinguisher,
         50, // dx
         380, // dy
         64,
@@ -535,7 +518,7 @@ setInterval(igniteRandomWindow, 3000);
       ctx.fillText("Puts out fire", 50, 460);
 
       ctx.drawImage(
-        laserImg,
+        images.laser,
         160, // dx
         380, // dy
         64,
@@ -544,7 +527,7 @@ setInterval(igniteRandomWindow, 3000);
       ctx.fillText("Broadcast location", 145, 460);
 
       ctx.drawImage(
-        potionImg,
+        images.potion,
         270, // dx
         380, // dy
         64,
@@ -553,7 +536,7 @@ setInterval(igniteRandomWindow, 3000);
       ctx.fillText("Adds HP", 280, 460);
 
       ctx.drawImage(
-        energyCubeImg,
+        images.energy_cube,
         380, // dx
         380, // dy
         64,
@@ -562,7 +545,7 @@ setInterval(igniteRandomWindow, 3000);
       ctx.fillText("Fries corpses", 375, 460);
 
       ctx.drawImage(
-        bubbleImg,
+        images.bubble,
         490, // dx
         380, // dy
         64,
@@ -679,7 +662,7 @@ setInterval(igniteRandomWindow, 3000);
       const dx = ox + x * tile - (dw - tile)/2;
       const dy = oy + y * tile - (dh - tile)/2;
 
-      drawSprite(fireImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+      drawSprite(images.fire, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
     }
 
     function drawItemS(item_id, x, y, ox, oy, frameCount) {
@@ -700,15 +683,15 @@ setInterval(igniteRandomWindow, 3000);
       const dy = oy + y * tile - (dh - tile)/2;
 
       if (item_id === 0){
-        drawSprite(fireExtinguisherS, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+        drawSprite(images.fire_extinguisher_s, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
       } else if (item_id === 1){
         // TODO laser
       } else if (item_id === 2){
-        drawSprite(energyCubeS, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+        drawSprite(images.energy_cube_s, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
       } else if (item_id === 3){
         // TODO potion
       } else if (item_id === 4){
-        drawSprite(bubbleS, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+        drawSprite(images.bubble_s, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
       }
     }
 
@@ -730,7 +713,7 @@ setInterval(igniteRandomWindow, 3000);
       const dx = ox + x * tile - (dw - tile)/2;
       const dy = oy + y * tile - (dh - tile)/2;
 
-      drawSprite(sparkImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+      drawSprite(images.spark, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
     }
 
     function drawFloor(x, y, ox, oy, sprite_id) {
@@ -749,19 +732,19 @@ setInterval(igniteRandomWindow, 3000);
       const dx = ox + x * tile - (dw - tile)/2;
       const dy = oy + y * tile - (dh - tile)/2;
       if (sprite_id === 0){
-        drawSprite(stoneTileImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+        drawSprite(images.stone_tile, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
       } else if (sprite_id === 1){
-        drawSprite(woodTileImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+        drawSprite(images.wood_tile, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
       } else if (sprite_id === 2){
-        drawSprite(brickImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+        drawSprite(images.brick, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
       } else if (sprite_id === 3){
-        drawSprite(exit0Img, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+        drawSprite(images.exit_0, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
       } else if (sprite_id === 4){
-        drawSprite(exit1Img, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+        drawSprite(images.exit_1, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
       } else if (sprite_id === 5){
-        drawSprite(exit2Img, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+        drawSprite(images.exit_2, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
       } else if (sprite_id === 6){
-        drawSprite(exit3Img, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+        drawSprite(images.exit_3, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
       }
     }
 
@@ -781,15 +764,15 @@ setInterval(igniteRandomWindow, 3000);
       const dx = ox + x * tile - (dw - tile)/2;
       const dy = oy + y * tile - (dh - tile)/2;
       if (item_id == 0){
-        drawSprite(chairImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+        drawSprite(images.chair, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
       } else if (item_id == 1){
-        drawSprite(tableImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+        drawSprite(images.table, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
       } else if (item_id == 2){
-        drawSprite(waterImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+        drawSprite(images.water, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
       } else if (item_id == 3){
-        drawSprite(vendingImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+        drawSprite(images.vending, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
       } else if (item_id == 4){
-        drawSprite(printerImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+        drawSprite(images.water, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
       }
     }
 
@@ -809,15 +792,15 @@ setInterval(igniteRandomWindow, 3000);
       const dx = ox + x * tile - (dw - tile)/2;
       const dy = oy + y * tile - (dh - tile)/2;
       if (item_id == 0){
-        drawSprite(fireExtinguisherImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+        drawSprite(images.fire_extinguisher, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
       } else if (item_id == 1){
-        drawSprite(laserImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+        drawSprite(images.laser, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
       } else if (item_id == 2){
-        drawSprite(energyCubeImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+        drawSprite(images.energy_cube, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
       } else if (item_id == 3){
-        drawSprite(potionImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+        drawSprite(images.potion, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
       } else if (item_id == 4){
-        drawSprite(bubbleImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+        drawSprite(images.bubble, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
       }
     }
 
@@ -843,7 +826,7 @@ setInterval(igniteRandomWindow, 3000);
       const dx = ox + x * tile - (dw - tile)/2;
       const dy = oy + y * tile - (dh - tile)/2;
 
-      drawSprite(ghostImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+      drawSprite(images.ghost, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
     }
 
     function drawSelf(x, y, ox, oy, direction, update) {
@@ -868,7 +851,7 @@ setInterval(igniteRandomWindow, 3000);
       const dx = ox + x * tile - (dw - tile)/2;
       const dy = oy + y * tile - (dh - tile)/2;
 
-      drawSprite(selfImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+      drawSprite(images.self, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
     }
 
     function drawOther(x, y, ox, oy, direction, update, frame) {
@@ -890,7 +873,7 @@ setInterval(igniteRandomWindow, 3000);
       const dx = ox + x * tile - (dw - tile)/2;
       const dy = oy + y * tile - (dh - tile)/2;
 
-      drawSprite(otherImg, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
+      drawSprite(images.other, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
     }
 
     let frameCount = 0;
@@ -1078,15 +1061,15 @@ setInterval(igniteRandomWindow, 3000);
       ctx.strokeRect(slotX, slotY, slotSize, slotSize);
       // draw icon if player has item
       if (currentItem === "fire_extinguisher") {
-        ctx.drawImage(fireExtinguisherImg, slotX + 4, slotY + 4, slotSize - 8, slotSize - 8);
+        ctx.drawImage(images.fire_extinguisher, slotX + 4, slotY + 4, slotSize - 8, slotSize - 8);
       } else if (currentItem === "laser"){
-        ctx.drawImage(laserImg, slotX + 4, slotY + 4, slotSize - 8, slotSize - 8);
+        ctx.drawImage(images.laser, slotX + 4, slotY + 4, slotSize - 8, slotSize - 8);
       } else if (currentItem === "energy_cube"){
-        ctx.drawImage(energyCubeImg, slotX + 4, slotY + 4, slotSize - 8, slotSize - 8);
+        ctx.drawImage(images.energy_cube, slotX + 4, slotY + 4, slotSize - 8, slotSize - 8);
       } else if (currentItem === "potion"){
-        ctx.drawImage(potionImg, slotX + 4, slotY + 4, slotSize - 8, slotSize - 8);
+        ctx.drawImage(images.potion, slotX + 4, slotY + 4, slotSize - 8, slotSize - 8);
       } else if (currentItem === "bubble"){
-        ctx.drawImage(bubbleImg, slotX + 4, slotY + 4, slotSize - 8, slotSize - 8);
+        ctx.drawImage(images.bubble, slotX + 4, slotY + 4, slotSize - 8, slotSize - 8);
       }
 
       ctx.font = "24px 'Pixelify Sans'";
@@ -1254,10 +1237,15 @@ setInterval(igniteRandomWindow, 3000);
       render(false);
     });
 
-    setInterval(() => {
-      if (gameState === "instructions" || gameState === "gameover") return;
-      render(true);
-    }, 100);
+    loadImages(imageSources)
+    .then(loaded => {
+      images = loaded;
+      setInterval(() => {
+        if (gameState === "gameover") return;
+        render(true);
+      }, 200);
+    })
+    .catch(err => console.error(err));
 
     let intervalId = null;
     function ghostInterval(p){
@@ -1339,7 +1327,7 @@ setInterval(igniteRandomWindow, 3000);
 
     // Render once (in case presence sync hasn't arrived yet)
     players[playerKey] = { x: Module.getX(), y: Module.getY(), floor: Module.getFloor(), health: Module.getHealth(), direction: Module.getDirection(), active: (gameState === "playing"), invincible: Module.get_invincibility() };
-    render(false);
+    // render(false);
   </script>
 </body>
 </html>
