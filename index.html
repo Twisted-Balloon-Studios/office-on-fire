@@ -39,6 +39,9 @@
       />
       <div id="gameover-screen" style="display:none;">
         <h1 style="font-family: 'Pixelify Sans', sans-serif;">Game Over</h1>
+        <div style="display:flex; justify-content:center; align-items:center; height:64px;">
+          <img src="/assets/flaming_skull.png" alt="" style="width:64px; height:64px;">
+        </div>
         <p id="final-level" style="font-family: 'Pixelify Sans', sans-serif; font-size: 18px;"></p>
         <button id="restart-button" style="font-family: 'Pixelify Sans', sans-serif;">Restart</button>
       </div>
@@ -220,7 +223,7 @@ setInterval(igniteRandomWindow, 3000);
 
     // audio
 
-    const bgMusic = new Audio('/assets/dystopian_mayhem.mp3');
+    const bgMusic = new Audio('/assets/fire_sound.m4a');
     bgMusic.loop = true;
     bgMusic.volume = 0.3;
     bgMusic.pause();
@@ -230,13 +233,18 @@ setInterval(igniteRandomWindow, 3000);
     const levelCompleteSound = new Audio('/assets/level-complete.m4a');
     const explosionSound = new Audio('/assets/explosion.m4a');
     const getItemSound = new Audio('/assets/get-item.m4a');
-    function playSound(obj){ obj.volume = 0.5; obj.currentTime = 0; obj.play(); }
+    function playSound(obj){ 
+      if (obj === gameOverSound){ obj.volume = 0.25; }
+      else { obj.volume = 0.3; }
+      obj.currentTime = 0; obj.play(); 
+    }
 
     let timeoutId = null; // store loop's timer
     let sound = null;
 
     function playSoundLoopWithRandomDelay(src, base=40, std=10) {
       sound = new Audio(src);
+      sound.volume = 0.3;
 
       function playAndScheduleNext() {
         sound.currentTime = 0;
