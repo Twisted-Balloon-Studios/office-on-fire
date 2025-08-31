@@ -61,13 +61,16 @@
   <div class="bird-container bird-container-four">
     <div class="bird bird-four"></div>
   </div>
-<div id="clouds">
-	<div class="cloud x1"></div>
-	<div class="cloud x2"></div>
-	<div class="cloud x3"></div>
-	<div class="cloud x4"></div>
-	<div class="cloud x5"></div>
-</div>
+  <div id="clouds">
+    <div class="cloud x1"></div>
+    <div class="cloud x2"></div>
+    <div class="cloud x3"></div>
+    <div class="cloud x4"></div>
+    <div class="cloud x5"></div>
+    <div class="cloud-img x6"></div>
+    <div class="cloud-img-2 x7"></div>
+    <div class="cloud-img-3 x8"></div>
+  </div>
 
 <script>
 // script for setting up the tower
@@ -202,7 +205,8 @@ setInterval(igniteRandomWindow, 3000);
       exit_2: "/assets/exit-2.png",
       exit_3: "/assets/exit-3.png",
       wood_tile: "/assets/wood_tile_1024.png",
-      stone_tile: "/assets/stone_tile_1024.png"
+      stone_tile: "/assets/stone_tile_1024.png",
+      tencent: "/assets/07_Tcloud_logo_Eng_rev.png"
     }
     let images = {};
     let loadedImages = 0;
@@ -492,6 +496,15 @@ setInterval(igniteRandomWindow, 3000);
       ctx.font = "12px 'Montserrat', sans-serif";
       ctx.textAlign = "left";
       ctx.fillStyle = "#cbd5e1";
+
+      ctx.drawImage(
+        images.tencent,
+        370, // dx
+        560, // dy
+        215,
+        32
+      );
+
       ctx.drawImage(
         images.exit,
         50, // dx
