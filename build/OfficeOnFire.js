@@ -44,7 +44,7 @@ if (ENVIRONMENT_IS_NODE) {
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmpls3celxk.js
+// include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmpt9utikna.js
 
   Module['expectedDataFileDownloads'] ??= 0;
   Module['expectedDataFileDownloads']++;
@@ -212,21 +212,21 @@ Module['FS_createPath']("/", "floors", true, true);
 
   })();
 
-// end include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmpls3celxk.js
-// include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmpeklwlg1v.js
+// end include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmpt9utikna.js
+// include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmpbf5ab1sf.js
 
     // All the pre-js content up to here must remain later on, we need to run
     // it.
     if ((typeof ENVIRONMENT_IS_WASM_WORKER != 'undefined' && ENVIRONMENT_IS_WASM_WORKER) || (typeof ENVIRONMENT_IS_PTHREAD != 'undefined' && ENVIRONMENT_IS_PTHREAD) || (typeof ENVIRONMENT_IS_AUDIO_WORKLET != 'undefined' && ENVIRONMENT_IS_AUDIO_WORKLET)) Module['preRun'] = [];
     var necessaryPreJSTasks = Module['preRun'].slice();
-  // end include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmpeklwlg1v.js
-// include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmpmnb_zd5d.js
+  // end include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmpbf5ab1sf.js
+// include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmp92zbhmco.js
 
     if (!Module['preRun']) throw 'Module.preRun should exist because file support used it; did a pre-js delete it?';
     necessaryPreJSTasks.forEach((task) => {
       if (Module['preRun'].indexOf(task) < 0) throw 'All preRun tasks that exist before user pre-js code should remain after; did you replace Module or modify Module.preRun?';
     });
-  // end include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmpmnb_zd5d.js
+  // end include: /var/folders/2f/mnjk1ps54knfyc8vl1qtr5tr0000gr/T/tmp92zbhmco.js
 
 
 var arguments_ = [];
