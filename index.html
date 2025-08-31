@@ -318,7 +318,15 @@ setInterval(igniteRandomWindow, 3000);
       gameState = "gameover";
       //gameCanvas.style.display = "none";
       gameoverScreen.style.display = "block";
-      players[playerKey].active = false;
+      players[playerKey] = {
+        x: Module.getX(),
+        y: Module.getY(),
+        floor: Module.getFloor(),
+        health: Module.getHealth(),
+        direction: Module.getDirection(),
+        active: false,
+        invincible: Module.get_invincibility()
+      };
       channel.track(players[playerKey]);
 
       // Update the level display text
@@ -423,7 +431,8 @@ setInterval(igniteRandomWindow, 3000);
           floor: Module.getFloor(),
           health: Module.getHealth(),
           direction: 0,
-          active: false
+          active: (gameState === "playing"),
+          invincible: Module.get_invincibility()
         });
       });
     }
@@ -837,7 +846,7 @@ setInterval(igniteRandomWindow, 3000);
       drawSprite(images.ghost, sx, sy, spriteW, spriteH, dx, dy, dw, dh);
     }
 
-    function drawSelf(x, y, ox, oy, direction, update) {
+    function drawSelf(x, y, ox, oy, direction, update){
       const frameCols = 4; // frames per row
       const frameRows = 4; // directions
       const spriteW = 1024;
@@ -907,7 +916,15 @@ setInterval(igniteRandomWindow, 3000);
           //startScreen.style.display = "none";
           canvas.style.display = "block";
           ghostInterval(Module.get_d());
-          players[playerKey].active = true;
+          players[playerKey] = {
+            x: Module.getX(),
+            y: Module.getY(),
+            floor: Module.getFloor(),
+            health: Module.getHealth(),
+            direction: Module.getDirection(),
+            active: true,
+            invincible: Module.get_invincibility()
+          };
           channel.track(players[playerKey]);
           //startGame(); // initialize maze, players, ghosts, etc.
         }
@@ -977,7 +994,7 @@ setInterval(igniteRandomWindow, 3000);
         } else if (key === playerKey){ // self
           tripleMap.set(map_key(p.x, p.y, 0), Module.getDirection());
         } else {
-          tripleMap.set(map_key(p.x, p.y, 1), [p.direction, p.health, p.invincibility]);
+          tripleMap.set(map_key(p.x, p.y, 1), [p.direction, p.health, p.invincible]);
         }
       }
 
@@ -1238,7 +1255,7 @@ setInterval(igniteRandomWindow, 3000);
         floor: Module.getFloor(),
         health: Module.getHealth(),
         direction: Module.getDirection(),
-        active: players[playerKey].active,
+        active: (gameState === "playing"),
         invincible: Module.get_invincibility()
       };
       channel.track(players[playerKey]);
@@ -1268,7 +1285,7 @@ setInterval(igniteRandomWindow, 3000);
         let need_update = false;
         if (invincibility === true && Module.get_invincibility() == 0){
           invincibility = false;
-          players[playerKey].invincibility = false;
+          players[playerKey].invincible = false;
           need_update = true;
         }
         // get player positions, call moveGhost, broadcast
